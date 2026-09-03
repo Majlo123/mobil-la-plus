@@ -25,10 +25,9 @@ import { Button } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { kategorijaHref } from "@/lib/catalog";
 import { faq, usluge, type Usluga } from "@/lib/data";
-import { site } from "@/lib/site";
+import { site, SITE_URL } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
-const SITE_URL = "https://mobilplusla.rs";
 
 export const metadata: Metadata = {
   // Naslov je namerno ono što ljudi kucaju u Google, a ne „Naše usluge" —

@@ -7,9 +7,8 @@ import { PageHeader } from "@/components/PageHeader";
 import { PutanjaJsonLd } from "@/components/PutanjaJsonLd";
 import { Reveal } from "@/components/Reveal";
 import { Button } from "@/components/ui/button";
-import { site } from "@/lib/site";
+import { site, SITE_URL } from "@/lib/site";
 
-const SITE_URL = "https://mobilplusla.rs";
 
 export const metadata: Metadata = {
   // Adresa je u naslovu namerno: „kontakt" bez lokacije ne znači ništa ni

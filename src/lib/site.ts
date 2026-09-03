@@ -15,6 +15,43 @@
  */
 const PODRAZUMEVAN_UPIT = "Zdravo, zanima me ponuda iz vaše prodavnice.";
 
+/** Domen na koji sajt ide kad se registruje i uveže. */
+const KONACNI_DOMEN = "https://mobilplusla.rs";
+
+/**
+ * Apsolutna adresa sajta — koristi se za canonical linkove, OG slike, sitemap,
+ * robots.txt i JSON-LD. JEDAN izvor istine; ne ponavljaj je po stranama.
+ *
+ * Redosled je bitan:
+ *  1. `NEXT_PUBLIC_SITE_URL` — postavi je kad pravi domen proradi.
+ *  2. `VERCEL_PROJECT_PRODUCTION_URL` — stabilan produkcijski domen projekta
+ *     na Vercel-u (npr. `mobil-la-plus.vercel.app`). NE koristimo `VERCEL_URL`,
+ *     jer se ona menja pri svakom deploy-u, pa bi canonical linkovi pokazivali
+ *     na adresu koja zastari čim stigne sledeći build.
+ *  3. Konačni domen — za lokalni rad i kad ničega nema.
+ *
+ * Vrednost se peče u build-u (strane su statičke), pa promena promenljive traži
+ * novi deploy.
+ */
+export const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : KONACNI_DOMEN)
+).replace(/\/+$/, "");
+
+/**
+ * Da li sajt trenutno stoji na svom pravom domenu.
+ *
+ * Dok radi na `*.vercel.app`, ne sme da se indeksira: Google bi upamtio
+ * privremenu adresu, pa bi ista sadržina kasnije postojala na dva domena i
+ * pravi domen bi se takmičio sam sa sobom.
+ */
+export const NA_PRAVOM_DOMENU = SITE_URL === KONACNI_DOMEN;
+
+/** Apsolutna adresa iz putanje — `abs("/servis")` → `https://…/servis`. */
+export const abs = (putanja: string) => `${SITE_URL}${putanja}`;
+
 export const site = {
   name: "Mobil Plus LA",
   legalName: "Mobil Plus LA",
@@ -55,7 +92,7 @@ export const site = {
   socials: {
     instagram: "https://www.instagram.com/mobil_plus_la/",
     instagramHandle: "mobil_plus_la",
-    website: "https://mobilplusla.rs",
+    website: SITE_URL,
   },
 
   /* -------------------------- Brzi kontakt linkovi ------------------------- */

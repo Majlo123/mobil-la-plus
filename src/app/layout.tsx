@@ -4,7 +4,7 @@ import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingContact } from "@/components/FloatingContact";
-import { site } from "@/lib/site";
+import { site, SITE_URL } from "@/lib/site";
 
 // Fontovi sa podrškom za srpsku latinicu (č, ć, š, ž, đ) → subset "latin-ext".
 // Sora = samouveren grotesque za naslove; Manrope = vrhunska čitljivost u tekstu,
@@ -23,7 +23,6 @@ const sans = Manrope({
   weight: ["400", "500", "600", "700", "800"],
 });
 
-const SITE_URL = "https://mobilplusla.rs";
 
 // Zvanični logotip služi i kao OG slika: nemamo namensku 1200×630 grafiku, a
 // kvadratni logo u pretraživanju/četu izgleda bolje od izrezanog kadra.

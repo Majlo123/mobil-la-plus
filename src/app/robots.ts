@@ -1,16 +1,28 @@
 import type { MetadataRoute } from "next";
-
-const BASE = "https://mobilplusla.rs";
+import { NA_PRAVOM_DOMENU, SITE_URL } from "@/lib/site";
 
 /**
  * Ceo sajt je otvoren za obilazak — nema korisničkih naloga, korpe ni stranica
  * sa privatnim podacima, pa nema šta da se zabranjuje.
+ *
+ * IZUZETAK: dok sajt stoji na privremenom domenu (`*.vercel.app`, pre nego što
+ * se uveže `mobilplusla.rs`), obilazak se ZABRANJUJE u celosti. Inače bi Google
+ * zapamtio privremenu adresu, a kad pravi domen proradi ista sadržina bi
+ * postojala na dva mesta — pravi domen bi se takmičio sam sa sobom za poziciju.
+ *
+ * Zabrana ne utiče na deljenje linka: sajt radi normalno i otvara se svakome
+ * kome pošalješ adresu. Skida se sama, čim `SITE_URL` postane pravi domen
+ * (postavi `NEXT_PUBLIC_SITE_URL` na Vercel-u i pokreni novi deploy).
  */
 export default function robots(): MetadataRoute.Robots {
+  if (!NA_PRAVOM_DOMENU) {
+    return { rules: { userAgent: "*", disallow: "/" } };
+  }
+
   return {
     rules: { userAgent: "*", allow: "/" },
     // Dva sitemap-a: URL-ovi svih stranica + poseban image sitemap za fotografije.
-    sitemap: [`${BASE}/sitemap.xml`, `${BASE}/image-sitemap.xml`],
-    host: BASE,
+    sitemap: [`${SITE_URL}/sitemap.xml`, `${SITE_URL}/image-sitemap.xml`],
+    host: SITE_URL,
   };
 }

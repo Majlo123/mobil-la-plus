@@ -7,8 +7,8 @@ import {
   katalogBrojStrana,
 } from "@/lib/products";
 import { kategorijaHref, brendHref } from "@/lib/catalog";
+import { SITE_URL } from "@/lib/site";
 
-const BASE = "https://mobilplusla.rs";
 
 /**
  * Sitemap svih stranica (početna, kategorije, kataloški indeks, svaki artikal).
@@ -26,18 +26,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
   const staticRoutes: MetadataRoute.Sitemap = [
-    { url: BASE, lastModified: now, changeFrequency: "weekly", priority: 1 },
+    { url: SITE_URL, lastModified: now, changeFrequency: "weekly", priority: 1 },
     // Prodavnica i servis su dve stvari zbog kojih ljudi i dolaze — zato oba
     // idu na vrh, iako servis ima jednu stranicu a prodavnica hiljade.
-    { url: `${BASE}/prodavnica`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
-    { url: `${BASE}/servis`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
-    { url: `${BASE}/kontakt`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${BASE}/o-nama`, lastModified: now, changeFrequency: "yearly", priority: 0.5 },
+    { url: `${SITE_URL}/prodavnica`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${SITE_URL}/servis`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
+    { url: `${SITE_URL}/kontakt`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${SITE_URL}/o-nama`, lastModified: now, changeFrequency: "yearly", priority: 0.5 },
   ];
 
   // Kategorijske stranice — one nose pretrage tipa „zaštitno staklo Novi Sad".
   const kategorije: MetadataRoute.Sitemap = productTypes().map((t) => ({
-    url: `${BASE}${kategorijaHref(t.key)}`,
+    url: `${SITE_URL}${kategorijaHref(t.key)}`,
     lastModified: now,
     changeFrequency: "weekly" as const,
     priority: 0.8,
@@ -45,7 +45,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // Stranice po brendu telefona — „maska za Xiaomi Redmi", „baterija za iPhone".
   const brendovi: MetadataRoute.Sitemap = productBrands().map((b) => ({
-    url: `${BASE}${brendHref(b.key)}`,
+    url: `${SITE_URL}${brendHref(b.key)}`,
     lastModified: now,
     changeFrequency: "weekly" as const,
     priority: 0.7,
@@ -57,7 +57,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const katalog: MetadataRoute.Sitemap = Array.from(
     { length: katalogBrojStrana() },
     (_, i) => ({
-      url: `${BASE}/katalog/${i + 1}`,
+      url: `${SITE_URL}/katalog/${i + 1}`,
       lastModified: now,
       changeFrequency: "weekly" as const,
       priority: 0.3,
@@ -67,7 +67,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Artikal sa cenom je gotova stranica; „Cena na upit" znači da nabavna cena
   // nije proverena (vidi data/cene-za-proveru.json), pa ide niže.
   const proizvodi: MetadataRoute.Sitemap = getAllProducts().map((p) => ({
-    url: `${BASE}${productHref(p)}`,
+    url: `${SITE_URL}${productHref(p)}`,
     lastModified: now,
     changeFrequency: "monthly",
     priority: p.price === null ? 0.4 : 0.6,

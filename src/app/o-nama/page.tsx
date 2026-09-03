@@ -19,9 +19,8 @@ import { Reveal } from "@/components/Reveal";
 import { Button } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { advantages, featuredCategories, usluge } from "@/lib/data";
-import { site } from "@/lib/site";
+import { site, SITE_URL } from "@/lib/site";
 
-const SITE_URL = "https://mobilplusla.rs";
 
 export const metadata: Metadata = {
   // Ime firme dodaje šablon iz layout-a, pa se ovde ne ponavlja — ostaje mesta

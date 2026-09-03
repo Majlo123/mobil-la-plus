@@ -1,5 +1,5 @@
 import { getProductsWithPhotos, productHref, type Product } from "@/lib/products";
-import { site } from "@/lib/site";
+import { site, SITE_URL } from "@/lib/site";
 
 /**
  * Image sitemap — poseban XML sa `image:` namespace-om, jer ugrađeni Next 14
@@ -23,7 +23,6 @@ import { site } from "@/lib/site";
  * ikakve izmene koda.
  */
 
-const BASE = "https://mobilplusla.rs";
 
 const escapeXml = (s: string) =>
   s.replace(/[<>&'"]/g, (c) =>
@@ -46,8 +45,8 @@ const BREND_SLIKE: { href: string; image: string; title: string }[] = [
 ];
 
 const unos = (href: string, image: string, title: string) =>
-  `  <url>\n    <loc>${escapeXml(`${BASE}${href}`)}</loc>\n    <image:image>\n      <image:loc>${escapeXml(
-    `${BASE}${image}`,
+  `  <url>\n    <loc>${escapeXml(`${SITE_URL}${href}`)}</loc>\n    <image:image>\n      <image:loc>${escapeXml(
+    `${SITE_URL}${image}`,
   )}</image:loc>\n      <image:title>${escapeXml(title)}</image:title>\n    </image:image>\n  </url>`;
 
 export function GET() {

@@ -265,7 +265,28 @@ Pre objave proveri da je domen `https://mobilplusla.rs` tačan u `layout.tsx`, `
 Najlakše preko [Vercel](https://vercel.com): povežeš repozitorijum i sajt je online. Radi i na
 svakom hostingu sa Node.js podrškom (`npm run build` + `npm run start`).
 
-Nema promenljivih okruženja — sajt ne šalje mejlove i ne zove eksterne servise.
+### Adresa sajta i indeksiranje
+
+Apsolutne adrese (canonical, OG slike, sitemap, JSON-LD) dolaze iz `SITE_URL` u
+`src/lib/site.ts`. Vrednost se bira ovim redom:
+
+| # | Izvor | Kada se koristi |
+| --- | --- | --- |
+| 1 | `NEXT_PUBLIC_SITE_URL` | kad je postavljena — ovde ide pravi domen |
+| 2 | `VERCEL_PROJECT_PRODUCTION_URL` | na Vercel-u, dok pravog domena nema |
+| 3 | `https://mobilplusla.rs` | lokalni rad |
+
+**Dok sajt stoji na `*.vercel.app`, `robots.txt` zabranjuje obilazak** (`Disallow: /`).
+To je namerno: da Google ne zapamti privremenu adresu i da kasnije pravi domen ne
+konkuriše sam sebi. Deljenje linka i dalje radi normalno — zabrana važi samo za pretraživače.
+
+Kad `mobilplusla.rs` proradi:
+
+1. Vercel → Settings → Domains → dodaj domen.
+2. Settings → Environment Variables → `NEXT_PUBLIC_SITE_URL = https://mobilplusla.rs`.
+3. Pokreni novi deploy (vrednost se peče u build-u) — `robots.txt` se sam otvara.
+
+Drugih promenljivih nema: sajt ne šalje mejlove i ne zove eksterne servise.
 
 ---
 

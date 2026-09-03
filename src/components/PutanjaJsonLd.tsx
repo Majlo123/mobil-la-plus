@@ -1,4 +1,4 @@
-const SITE_URL = "https://mobilplusla.rs";
+import { SITE_URL } from "@/lib/site";
 
 /**
  * BreadcrumbList strukturirani podaci. Google ih koristi da u rezultatu umesto

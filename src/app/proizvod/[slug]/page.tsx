@@ -10,7 +10,7 @@ import { ProizvodKartica } from "@/components/ProizvodKartica";
 import { PutanjaJsonLd } from "@/components/PutanjaJsonLd";
 import { brendHref, kategorijaHref } from "@/lib/catalog";
 import { formatRsd, imaCenu } from "@/lib/pricing";
-import { site } from "@/lib/site";
+import { site, SITE_URL } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import {
   getProductBySlug,
@@ -29,7 +29,6 @@ import {
  * da stoji odmah pod cenom, pre bilo kog opisnog teksta.
  */
 
-const SITE_URL = "https://mobilplusla.rs";
 
 /** Slika koja ide u OG kad artikal nema fotografiju (isti fallback kao layout). */
 const OG_FALLBACK = "/images/brend/logo.jpg";
