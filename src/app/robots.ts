@@ -6,13 +6,14 @@ import { NA_PRAVOM_DOMENU, SITE_URL } from "@/lib/site";
  * sa privatnim podacima, pa nema šta da se zabranjuje.
  *
  * IZUZETAK: dok sajt stoji na privremenom domenu (`*.vercel.app`, pre nego što
- * se uveže `mobil-plus-la.com`), obilazak se ZABRANJUJE u celosti. Inače bi Google
+ * se poveže `mobil-plus-la.com`), obilazak se ZABRANJUJE u celosti. Inače bi Google
  * zapamtio privremenu adresu, a kad pravi domen proradi ista sadržina bi
  * postojala na dva mesta — pravi domen bi se takmičio sam sa sobom za poziciju.
  *
  * Zabrana ne utiče na deljenje linka: sajt radi normalno i otvara se svakome
- * kome pošalješ adresu. Skida se sama, čim `SITE_URL` postane pravi domen
- * (postavi `NEXT_PUBLIC_SITE_URL` na Vercel-u i pokreni novi deploy).
+ * kome pošalješ adresu. Skida se sama čim se domen poveže na Vercel-u — vidi
+ * `NA_PRAVOM_DOMENU` u `src/lib/site.ts` (ne treba ručno podešavanje env
+ * promenljive, samo novi deploy posle povezivanja domena).
  */
 export default function robots(): MetadataRoute.Robots {
   if (!NA_PRAVOM_DOMENU) {

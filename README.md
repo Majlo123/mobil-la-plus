@@ -292,19 +292,18 @@ Apsolutne adrese (canonical, OG slike, sitemap, JSON-LD) dolaze iz `SITE_URL` u
 
 | # | Izvor | Kada se koristi |
 | --- | --- | --- |
-| 1 | `NEXT_PUBLIC_SITE_URL` | kad je postavljena — ovde ide pravi domen |
-| 2 | `VERCEL_PROJECT_PRODUCTION_URL` | na Vercel-u, dok pravog domena nema |
-| 3 | `https://www.mobil-plus-la.com` | lokalni rad |
+| 1 | `NEXT_PUBLIC_SITE_URL` | ručni override, ako ikad zatreba drugi domen |
+| 2 | `VERCEL_PROJECT_PRODUCTION_URL` | na Vercel-u — automatski, to je povezani domen |
+| 3 | `https://www.mobil-plus-la.com` | lokalni rad, van Vercel-a |
 
-**Dok sajt stoji na `*.vercel.app`, `robots.txt` zabranjuje obilazak** (`Disallow: /`).
-To je namerno: da Google ne zapamti privremenu adresu i da kasnije pravi domen ne
-konkuriše sam sebi. Deljenje linka i dalje radi normalno — zabrana važi samo za pretraživače.
+**Dok sajt stoji na `*.vercel.app`, `robots.txt` zabranjuje obilazak** (`Disallow: /`) —
+vidi `NA_PRAVOM_DOMENU` u `src/lib/site.ts`. To je namerno: da Google ne zapamti privremenu
+adresu i da kasnije pravi domen ne konkuriše sam sebi. Deljenje linka i dalje radi
+normalno — zabrana važi samo za pretraživače.
 
-Kad `mobil-plus-la.com` proradi:
-
-1. Vercel → Settings → Domains → dodaj domen.
-2. Settings → Environment Variables → `NEXT_PUBLIC_SITE_URL = https://www.mobil-plus-la.com`.
-3. Pokreni novi deploy (vrednost se peče u build-u) — `robots.txt` se sam otvara.
+Kad se `mobil-plus-la.com` poveže (Vercel → Settings → Domains), zabrana se sama skida
+posle prvog sledećeg deploy-a — Vercel sam postavlja `VERCEL_PROJECT_PRODUCTION_URL` na
+povezani domen, nema ručnog podešavanja env promenljive.
 
 Drugih promenljivih nema: sajt ne šalje mejlove i ne zove eksterne servise.
 

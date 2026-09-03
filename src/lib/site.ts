@@ -46,8 +46,13 @@ export const SITE_URL = (
  * Dok radi na `*.vercel.app`, ne sme da se indeksira: Google bi upamtio
  * privremenu adresu, pa bi ista sadržina kasnije postojala na dva domena i
  * pravi domen bi se takmičio sam sa sobom.
+ *
+ * Proverava se OBLIK hosta (nije `*.vercel.app`), ne tačna jednakost sa
+ * `KONACNI_DOMEN` — Vercel sam postavlja `VERCEL_PROJECT_PRODUCTION_URL` na
+ * povezani domen (apex ili `www`, šta je od to dvoje podešeno kao glavno),
+ * pa ovo radi bez ručnog podešavanja `NEXT_PUBLIC_SITE_URL` na hostingu.
  */
-export const NA_PRAVOM_DOMENU = SITE_URL === KONACNI_DOMEN;
+export const NA_PRAVOM_DOMENU = !new URL(SITE_URL).hostname.endsWith(".vercel.app");
 
 /** Apsolutna adresa iz putanje — `abs("/servis")` → `https://…/servis`. */
 export const abs = (putanja: string) => `${SITE_URL}${putanja}`;
