@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { ImageIcon } from "lucide-react";
 import { categories } from "@/lib/data";
+import { JE_PRAZNA_SLIKA, slikaZa, trebaOptimizaciju, type Kadar } from "@/lib/slike";
 import { cn } from "@/lib/utils";
 
 /**
@@ -15,10 +16,13 @@ import { cn } from "@/lib/utils";
  * Ovo je server komponenta — nema fallback-a „na grešku slike”. Ako putanja
  * pukne, ispod slike ostaje svetla ploča, ne prazna belina.
  *
- * Slike idu `unoptimized`: to su udaljene sličice (~120px) sa sajtova
- * dobavljača, pa bi ih optimizer samo preuveličao — a za 10.000+ artikala bi
- * i tražio da svaki domen stoji u `remotePatterns` i trošio kvotu
- * transformacija hostinga.
+ * Veličinu slike bira `src/lib/slike.ts` prema `kadar` propu: adrese u katalogu
+ * pokazuju na sličice dobavljača (120–300 px) koje su na kartici vidljivo mutne,
+ * pa se prepisuju na veću varijantu istog izvora.
+ *
+ * Slike idu `unoptimized` osim tamo gde `trebaOptimizaciju` kaže drugačije —
+ * već su male, pa bi optimizer trošio kvotu transformacija hostinga na 30.000+
+ * artikala bez ikakve dobiti.
  */
 
 /**
@@ -36,6 +40,8 @@ type ThumbProps = {
   typeKey?: string;
   /** Kataloški kod artikla; prikazuje se sitno, kad slike nema. */
   code?: string;
+  /** Gde se slika prikazuje — određuje koja se veličina traži od izvora. */
+  kadar?: Kadar;
   sizes?: string;
   priority?: boolean;
   className?: string;
@@ -46,22 +52,26 @@ export function ProductThumb({
   name,
   typeKey,
   code,
+  kadar = "kartica",
   sizes = "(max-width: 640px) 50vw, 25vw",
   priority = false,
   className,
 }: ThumbProps) {
+  // Placeholder dobavljača nije fotografija proizvoda — bolje naš tile.
+  const adresa = JE_PRAZNA_SLIKA(src) ? undefined : slikaZa(src, kadar);
+
   /* --- Fotografija artikla --- */
-  if (src) {
+  if (adresa) {
     return (
       <div className={cn("relative overflow-hidden bg-cream p-3", className)}>
         <Image
-          src={src}
+          src={adresa}
           alt={name}
           fill
           sizes={sizes}
           priority={priority}
           // vidi napomenu na vrhu fajla
-          unoptimized
+          unoptimized={!trebaOptimizaciju(adresa, kadar)}
           // `contain`, ne `cover`: sličice dobavljača već imaju svoju marginu,
           // pa bi `cover` odsekao ivice proizvoda.
           className="object-contain"

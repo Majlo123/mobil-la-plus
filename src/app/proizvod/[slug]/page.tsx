@@ -206,6 +206,9 @@ export default function ProizvodPage({ params }: { params: { slug: string } }) {
                 name={p.name}
                 typeKey={p.typeKey}
                 code={p.id}
+                // Ovde se slika gleda izbliza, pa se od izvora traži najveća
+                // varijanta (vidi src/lib/slike.ts).
+                kadar="detalj"
                 sizes="(max-width: 1024px) 100vw, 44vw"
                 priority
                 // Kvadrat: sličice dobavljača su uglavnom kvadratne, a i

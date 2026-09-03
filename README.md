@@ -225,11 +225,31 @@ nema ništa za proveru.
 ### Slike artikala
 
 Fotografije **ostaju na serverima dobavljača** — katalog čuva pune adrese, ne lokalne kopije.
-Hostovi su dozvoljeni u `next.config.mjs` (`remotePatterns`), a slike se serviraju
-`unoptimized`, bez prolaska kroz Next optimizator.
+Hostovi su dozvoljeni u `next.config.mjs` (`remotePatterns`).
 
-Slika sme da **fali** (`image` je opciono polje). Tada `ProductThumb` prikaže brendiran
-placeholder sa ikonicom kategorije, tako da kartica nikad nije prazna.
+#### Veličine → `src/lib/slike.ts`
+
+Adrese u katalogu pokazuju na **sličice** koje dobavljači koriste u svojim listama, a te su
+premale za naše kartice i vide se kao mutne. Svaki izvor ima veću varijantu, ali na drugačiji
+način, pa `slikaZa(src, kadar)` prepisuje adresu:
+
+| Izvor | U katalogu | Kartica | Stranica artikla | Kako |
+| --- | --- | --- | --- | --- |
+| gsmexpert.rs | 120×120 | **500×500** | **800×800** | `w`/`h` u timthumb query stringu |
+| gsm3g.com | 270×270 | **1000×1000** | 1000×1000 | sufiks `_w270` → `_w1000` |
+| vipmobil.net | 300×300 | 300×300 | **original 3264×3264** | prefiks `rs_` se skida |
+
+Vip mobil **nema srednju veličinu** — ili 300 px ili original od 1,1 MB. Zato original ide samo
+na stranicu artikla i to kroz Next optimizator (`trebaOptimizaciju`), koji ga smanji na ~8 kB.
+U mreži od 24 kartice originali bi bili 27 MB po strani, pa tamo ostaje `rs_`.
+
+Sve ostalo se servira `unoptimized`: slike su već male, a optimizacija 33.000+ artikala bi samo
+trošila kvotu transformacija hostinga bez dobiti.
+
+Slika sme da **fali** (`image` je opciono polje), a Vip mobil za deo artikala vraća svoj
+`default_product.png` — što nije fotografija proizvoda. Oba slučaja hvata `ProductThumb` i
+prikaže brendiran placeholder sa ikonicom kategorije, tako da kartica nikad nije prazna
+(trenutno: 33.502 artikla sa pravom fotografijom, 2.067 bez slike, 332 sa tuđim placeholder-om).
 
 Zbog toga `/image-sitemap.xml` **ne prijavljuje fotografije artikala** — Google indeksira sliku
 pod domenom na kome se nalazi, a to su tuđi domeni. Sitemap sadrži samo slike sa našeg domena
