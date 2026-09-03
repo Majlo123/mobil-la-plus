@@ -22,6 +22,10 @@ import type { Izbor } from "@/lib/shop-query";
  * filtrira katalog i vrati novu stranu (vidi `src/lib/catalog.ts` zašto katalog
  * od 14.500 artikala ne ide u pretraživač). Zato ovde nema ni „loading" stanja —
  * Next drži staru stranu na ekranu dok nova ne stigne.
+ *
+ * Deli je i `/prodavnica` (sve fasete) i `/kategorija/[tip]` (bez fasete
+ * „tip" — kategorija je već zadata rutom) — otuda `basePath`, umesto da URL
+ * bude zakucan na `/prodavnica`.
  */
 
 type Faseta = { def: FacetDef; opcije: FacetOption[] };
@@ -33,6 +37,8 @@ type Props = {
   sort: SortKey;
   /** Broj pogodaka — javlja se čitaču ekrana posle svake izmene filtera. */
   ukupno: number;
+  /** Ruta na koju izmene filtera navigiraju (`/prodavnica` ili `/kategorija/…`). */
+  basePath: string;
 };
 
 /** Vrednosti fasete se u URL-u čuvaju kao `tip=maske,stakla`. */
@@ -42,7 +48,15 @@ const parseList = (raw: string | null) =>
 const POLJE =
   "h-12 w-full rounded-xl border border-input bg-ink-800 text-sm text-cream outline-none transition-colors placeholder:text-muted-foreground hover:border-brand/40 focus-visible:border-brand-500 focus-visible:ring-2 focus-visible:ring-ring/60";
 
-export function FilterKontrole({ fasete, izbor, q, sort, ukupno }: Props) {
+/** Broj faseta variра (kategorijska strana ima jednu manje) — mreža prati broj. */
+const KOLONE: Record<number, string> = {
+  1: "sm:grid-cols-1",
+  2: "sm:grid-cols-2",
+  3: "sm:grid-cols-2 lg:grid-cols-3",
+  4: "sm:grid-cols-2 lg:grid-cols-4",
+};
+
+export function FilterKontrole({ fasete, izbor, q, sort, ukupno, basePath }: Props) {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -71,9 +85,9 @@ export function FilterKontrole({ fasete, izbor, q, sort, ukupno }: Props) {
 
       pending.current = next;
       const qs = next.toString();
-      router.replace(qs ? `/prodavnica?${qs}` : "/prodavnica", { scroll: false });
+      router.replace(qs ? `${basePath}?${qs}` : basePath, { scroll: false });
     },
-    [params, router],
+    [params, router, basePath],
   );
 
   /* -------------------------------- Pretraga -------------------------------- */
@@ -136,7 +150,7 @@ export function FilterKontrole({ fasete, izbor, q, sort, ukupno }: Props) {
 
   return (
     <div className="rounded-2xl border border-ink-600 bg-ink-800 p-4 shadow-card sm:p-5">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className={cn("grid gap-4", KOLONE[fasete.length] ?? KOLONE[4])}>
         {fasete.map(({ def, opcije }) => (
           <MultiSelect
             key={def.key}

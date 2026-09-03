@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, ChevronRight, Wrench } from "lucide-react";
+import { FilterKontrole } from "@/components/FilterKontrole";
 import { KontaktDugmad } from "@/components/KontaktDugmad";
 import { PageHeader } from "@/components/PageHeader";
+import { Paginacija } from "@/components/Paginacija";
+import { PraznoStanje } from "@/components/PraznoStanje";
 import { ProizvodKartica } from "@/components/ProizvodKartica";
 import { PutanjaJsonLd } from "@/components/PutanjaJsonLd";
 import { Reveal } from "@/components/Reveal";
@@ -17,15 +20,20 @@ import {
   typeDescription,
   type Product,
 } from "@/lib/products";
+import { PO_STRANI, parseUpit, pretrazi } from "@/lib/shop-query";
 import { site } from "@/lib/site";
 
 /**
  * Kategorijska strana — jedna vrsta artikla (maske, stakla, baterije…).
  *
  * Ovo je KANONSKA, indeksabilna strana za pretrage tipa „zaštitno staklo Novi
- * Sad". `/prodavnica` je filtrirana preko `searchParams`, pa svaka kombinacija
- * filtera ne sme u indeks; ove strane su statične, imaju svoj canonical i daju
- * Google-u interne linkove ka artiklima i ka stranama brendova.
+ * Sad" — ali samo u podrazumevanom, nefiltriranom obliku (vidi `generateMetadata`).
+ * Isti `FilterKontrole` kao na `/prodavnica` radi i ovde, samo bez fasete „tip"
+ * (nju već nosi ruta) i sa `osnova` ograničenom na ovu vrstu artikla — kupac
+ * sme da suzi po marki/modelu/ceni a da ne napusti kategoriju. Čim korisnik
+ * doda filter, strana se ponaša kao `/prodavnica` (paginacija, `noindex`);
+ * podrazumevani prikaz ostaje statična vitrina sa linkovima ka artiklima i
+ * stranama brendova, kao i do sada.
  */
 
 /* Svi ključevi dolaze iz kataloga — nepoznata vrsta je 404, ne prazna strana. */
@@ -38,14 +46,15 @@ export function generateStaticParams() {
 /* -------------------------------- Pomoćno --------------------------------- */
 
 /**
- * Koliko artikala ide u vitrinu.
+ * Koliko artikala ide u vitrinu kad NIJEDAN filter nije aktivan.
  *
- * Namerno NEMA paginacije preko `?strana=N` na ovoj ruti. Čim strana pročita
- * `searchParams`, Next je renderuje na svaki zahtev — 13 kategorija bi postalo
- * preko 700 SSR strana koje ponavljaju posao koji `/katalog/[strana]` već radi
- * statički i jeftino (tamo svaki artikal ima interni link). Ovde ostaje vitrina
- * plus link na filtriranu prodavnicu, gde korisnik ima pretragu, fasete i
- * sortiranje — dakle ono što mu na 22.000 maski jedino i pomaže.
+ * Čim korisnik doda filter (ili ode na stranu 2+), vitrina ustupa mesto punoj,
+ * paginiranoj listi iz `pretrazi()` — ista mehanika kao `/prodavnica`, samo nad
+ * `osnova` ograničenom na ovu vrstu artikla. Podrazumevani, nefiltrirani prikaz
+ * ostaje statična vitrina: to je jedini oblik ove strane koji sme u indeks (vidi
+ * `generateMetadata`), pa 48 kartica ostaje dovoljno da Google dobije interne
+ * linkove ka artiklima bez ponovnog generisanja onoga što `/katalog/[strana]`
+ * već radi statički.
  */
 const U_VITRINI = 48;
 
@@ -102,13 +111,32 @@ function brendoviUKategoriji(items: Product[]): Brend[] {
   );
 }
 
+type SearchParams = Record<string, string | string[] | undefined>;
+
+/** Upit iz URL-a, ali BEZ fasete „tip" — nju na ovoj ruti već nosi `params.tip`. */
+function upitZaKategoriju(searchParams: SearchParams) {
+  const upit = parseUpit(searchParams);
+  return { ...upit, izbor: { ...upit.izbor, tip: [] } };
+}
+
+/** Aktivan filter, pretraga ili strana ≠ 1 — određuje i `robots`, i koji se prikaz renderuje. */
+function jeFiltrirano(upit: ReturnType<typeof upitZaKategoriju>): boolean {
+  return Object.values(upit.izbor).flat().length > 0 || upit.q !== "" || upit.strana > 1;
+}
+
 /* -------------------------------- Metadata -------------------------------- */
 
 // Kad strana deklariše `openGraph`, roditeljski iz `layout.tsx` se ne nasleđuje
 // — zato se slika ponavlja ovde (drugog OG vizuala i nemamo).
 const OG_IMAGE = "/images/brend/logo.jpg";
 
-export function generateMetadata({ params }: { params: { tip: string } }): Metadata {
+export function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: { tip: string };
+  searchParams: SearchParams;
+}): Metadata {
   const kat = productTypes().find((t) => t.key === params.tip);
   if (!kat) return {};
 
@@ -116,10 +144,16 @@ export function generateMetadata({ params }: { params: { tip: string } }): Metad
   const title = `${kat.label} za mobilne telefone — Novi Sad`;
   const description = `${typeDescription(kat.key)} ${broj(kat.count)} ${artikala(kat.count)} sa cenama u dinarima — ${site.name}, ${site.address.city}.`;
 
+  // Filtrirani prikaz (marka/model/cena, pretraga, strana 2+) ne sme u indeks —
+  // kombinacija faseta daje na hiljade URL-ova sa istim artiklima, isto kao na
+  // `/prodavnica`. Canonical i dalje pokazuje na čistu kategoriju.
+  const filtrirano = jeFiltrirano(upitZaKategoriju(searchParams));
+
   return {
     title,
     description,
     alternates: { canonical },
+    robots: { index: !filtrirano, follow: true },
     openGraph: {
       type: "website",
       url: canonical,
@@ -132,7 +166,13 @@ export function generateMetadata({ params }: { params: { tip: string } }): Metad
 
 /* -------------------------------- Stranica -------------------------------- */
 
-export default function KategorijaPage({ params }: { params: { tip: string } }) {
+export default function KategorijaPage({
+  params,
+  searchParams,
+}: {
+  params: { tip: string };
+  searchParams: SearchParams;
+}) {
   const kat = productTypes().find((t) => t.key === params.tip);
   if (!kat) notFound();
 
@@ -144,6 +184,21 @@ export default function KategorijaPage({ params }: { params: { tip: string } }) 
   // („<ikonica>"), a ne kao komponentu iz `lib/data`.
   const Ikonica = categories.find((c) => c.key === kat.key)?.icon;
   const ostaleKategorije = productTypes().filter((t) => t.key !== kat.key);
+
+  // Isti filter/sort/pretraga kao na `/prodavnica`, ali nad `svi` (samo ova
+  // vrsta) i bez fasete „tip" — vidi `FilterKontrole` i komentar uz `U_VITRINI`.
+  const upit = upitZaKategoriju(searchParams);
+  const filtrirano = jeFiltrirano(upit);
+  const {
+    strana: filtriraniItemi,
+    ukupno: ukupnoFiltrirano,
+    brojStrana,
+    tekucaStrana,
+    fasete,
+  } = pretrazi(upit, svi);
+  const faseteBezTipa = fasete.filter((f) => f.def.key !== "tip");
+  const prviFiltrirani = (tekucaStrana - 1) * PO_STRANI + 1;
+  const poslednjiFiltrirani = prviFiltrirani + filtriraniItemi.length - 1;
 
   return (
     <>
@@ -160,7 +215,7 @@ export default function KategorijaPage({ params }: { params: { tip: string } }) 
         description={typeDescription(kat.key)}
       />
 
-      <section className="section">
+      <section className="section pt-10 md:pt-12">
         <div className="container">
           {/* Vidljiva putanja (JSON-LD verzija je gore) — na dubokim stranama
               kupac mora da zna gde je i kako da se vrati u celu prodavnicu. */}
@@ -172,8 +227,8 @@ export default function KategorijaPage({ params }: { params: { tip: string } }) 
             <span className="font-medium text-cream">{kat.label}</span>
           </nav>
 
-          {/* Kontakt odmah ispod putanje: kupac koji ne nađe svoj model u
-              vitrini ne treba da skroluje 48 kartica do dugmadi. Bez `naziv`
+          {/* Kontakt ispod putanje: kupac koji ne nađe svoj model
+              ne treba da skroluje 48 kartica do dugmadi. Bez `naziv`
               — na kategoriji nema jednog artikla, a predpopunjeno „da li je
               dostupno?" za celu kategoriju bi vlasniku stiglo kao besmislica.
               Konkretan upit ide sa kartice. */}
@@ -206,34 +261,85 @@ export default function KategorijaPage({ params }: { params: { tip: string } }) 
             </div>
           ) : null}
 
-          {/* Kartice nisu pojedinačno u `Reveal`: 48 framer instanci na strani
-              je skuplje od efekta koji donose. Animiraju se zaglavlja blokova. */}
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {vitrina.map((item) => (
-              <ProizvodKartica key={item.id} item={item} />
-            ))}
+          {/* Isti filter/sort/pretraga kao na `/prodavnica`, samo bez fasete
+              „tip" (nju već nosi ova ruta) i nad artiklima iz ove kategorije. */}
+          <div className="mt-8">
+            <FilterKontrole
+              fasete={faseteBezTipa}
+              izbor={upit.izbor}
+              q={upit.q}
+              sort={upit.sort}
+              ukupno={ukupnoFiltrirano}
+              basePath={kategorijaHref(kat.key)}
+            />
           </div>
 
-          {ostalo > 0 ? (
-            <Reveal className="mt-10">
-              <div className="flex flex-col gap-4 rounded-2xl border border-ink-600 bg-ink-800 p-6 shadow-card sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-cream">
-                    Još {broj(ostalo)} {artikala(ostalo)} u ovoj kategoriji
-                  </h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    U prodavnici možete filtrirati po telefonu i ceni ili pretražiti po tačnom modelu.
-                  </p>
+          {filtrirano ? (
+            ukupnoFiltrirano > 0 ? (
+              <>
+                <p className="mt-6 text-sm text-muted-foreground">
+                  Prikazano{" "}
+                  <span className="font-semibold text-cream">
+                    {broj(prviFiltrirani)}–{broj(poslednjiFiltrirani)}
+                  </span>{" "}
+                  od <span className="font-semibold text-cream">{broj(ukupnoFiltrirano)}</span>{" "}
+                  {artikala(ukupnoFiltrirano)}
+                  {brojStrana > 1 ? (
+                    <>
+                      {" "}
+                      · strana {tekucaStrana} od {brojStrana}
+                    </>
+                  ) : null}
+                </p>
+
+                <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-5">
+                  {filtriraniItemi.map((item) => (
+                    <ProizvodKartica key={item.id} item={item} />
+                  ))}
                 </div>
-                <Button asChild size="md" className="shrink-0">
-                  <Link href={prodavnicaHref({ tip: kat.key })}>
-                    Prikaži sve
-                    <ArrowRight aria-hidden className="h-4 w-4" />
-                  </Link>
-                </Button>
+
+                <Paginacija
+                  upit={upit}
+                  tekuca={tekucaStrana}
+                  strana={brojStrana}
+                  basePath={kategorijaHref(kat.key)}
+                />
+              </>
+            ) : (
+              <PraznoStanje />
+            )
+          ) : (
+            <>
+              {/* Kartice nisu pojedinačno u `Reveal`: 48 framer instanci na strani
+                  je skuplje od efekta koji donose. Animiraju se zaglavlja blokova. */}
+              <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {vitrina.map((item) => (
+                  <ProizvodKartica key={item.id} item={item} />
+                ))}
               </div>
-            </Reveal>
-          ) : null}
+
+              {ostalo > 0 ? (
+                <Reveal className="mt-10">
+                  <div className="flex flex-col gap-4 rounded-2xl border border-ink-600 bg-ink-800 p-6 shadow-card sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h2 className="text-lg font-semibold text-cream">
+                        Još {broj(ostalo)} {artikala(ostalo)} u ovoj kategoriji
+                      </h2>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        U prodavnici možete filtrirati po telefonu i ceni ili pretražiti po tačnom modelu.
+                      </p>
+                    </div>
+                    <Button asChild size="md" className="shrink-0">
+                      <Link href={prodavnicaHref({ tip: kat.key })}>
+                        Prikaži sve
+                        <ArrowRight aria-hidden className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                </Reveal>
+              ) : null}
+            </>
+          )}
         </div>
       </section>
 

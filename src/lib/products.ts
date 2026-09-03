@@ -28,8 +28,15 @@ export type Product = {
   typeLabel: string;
   brandKey?: string;
   brandLabel?: string;
-  /** Model telefona za koji artikal odgovara, ako je poznat. */
-  model?: string;
+  /**
+   * Model telefona za koji artikal odgovara — kanonski ključ i naziv.
+   *
+   * Ne dolazi iz naziva „kako jeste": nazivi dobavljača daju 7.918 različitih
+   * varijanti (samo „S23" ima 90), pa se model PREPOZNAJE poređenjem sa
+   * rečnikom pravih modela — vidi `scripts/modeli-dictionary.mjs`.
+   */
+  modelKey?: string;
+  modelLabel?: string;
 };
 
 export { productSlug, idFromSlug };
@@ -41,7 +48,10 @@ export const productHref = (p: Product) => `/proizvod/${p.slug}`;
 type PackedCatalog = {
   types: { key: string; label: string }[];
   brands: { key: string; label: string }[];
-  items: [string, string, number | null, string | null, number, number, string | null][];
+  /** Kanonski modeli telefona; `brand` vezuje model za marku. */
+  models: { key: string; label: string; brand: string }[];
+  /** [id, naziv, cenaRSD, slika, tipIdx, brendIdx, modelIdx] — idx -1 = nema. */
+  items: [string, string, number | null, string | null, number, number, number][];
 };
 
 let cache: {
@@ -57,9 +67,10 @@ function build() {
   const at = (table: { key: string; label: string }[], i: number) =>
     i >= 0 ? table[i] : undefined;
 
-  const all: Product[] = tables.items.map(([id, name, price, image, t, b, model]) => {
+  const all: Product[] = tables.items.map(([id, name, price, image, t, b, m]) => {
     const type = at(tables.types, t);
     const brand = at(tables.brands, b);
+    const model = m >= 0 ? tables.models[m] : undefined;
     return {
       id,
       slug: productSlug(name, id),
@@ -69,7 +80,7 @@ function build() {
       typeKey: type?.key ?? "ostalo",
       typeLabel: type?.label ?? "Ostalo",
       ...(brand ? { brandKey: brand.key, brandLabel: brand.label } : {}),
-      ...(model ? { model } : {}),
+      ...(model ? { modelKey: model.key, modelLabel: model.label } : {}),
     };
   });
 
@@ -112,7 +123,7 @@ export function relatedProducts(p: Product, limit = 4): Product[] {
   const score = (o: Product) => {
     if (o.id === p.id) return -1;
     let s = 0;
-    if (o.model && p.model && o.model === p.model) s += 4;
+    if (o.modelKey && p.modelKey && o.modelKey === p.modelKey) s += 4;
     if (o.typeKey === p.typeKey) s += 3;
     if (o.brandKey && o.brandKey === p.brandKey) s += 2;
     if (cenovniRazred(o.price) === cenovniRazred(p.price)) s += 1;
@@ -165,8 +176,8 @@ export function productDescription(p: Product): string {
   const uvod =
     OPIS_PO_TIPU[p.typeKey] ??
     "Artikal iz naše ponude opreme za mobilne telefone.";
-  const zaModel = p.model
-    ? ` Odgovara modelu ${p.model}.`
+  const zaModel = p.modelLabel
+    ? ` Odgovara modelu ${p.modelLabel}.`
     : p.brandLabel
       ? ` Namenjen telefonima ${p.brandLabel}.`
       : "";
@@ -231,8 +242,16 @@ export function productBrands(): Kategorija[] {
   );
 }
 
+/** Kanonski modeli telefona za koje postoji oprema. */
+export function productModels(): Kategorija[] {
+  return prebroj(getAllProducts(), (p) => p.modelKey, (p) => p.modelLabel);
+}
+
 export const getProductsByType = (typeKey: string) =>
   getAllProducts().filter((p) => p.typeKey === typeKey);
+
+export const getProductsByModel = (modelKey: string) =>
+  getAllProducts().filter((p) => p.modelKey === modelKey);
 
 export const getProductsByBrand = (brandKey: string) =>
   getAllProducts().filter((p) => p.brandKey === brandKey);

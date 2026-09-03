@@ -20,9 +20,18 @@ export type FacetDef = {
   placeholder: string;
 };
 
+/**
+ * `model` je najvažnija faseta u ovom katalogu, a ne najočiglednija.
+ *
+ * Kupac ne traži „masku" nego „masku za svoj telefon". Bez modela, „maske +
+ * Samsung" daje 8.931 rezultat kroz koje niko ne prelistava — a to je bio slučaj
+ * dok je model postojao samo kao tekst na kartici. Zato stoji odmah posle marke,
+ * a `MultiSelect` u njemu ima pretragu (ima ih nekoliko stotina).
+ */
 export const FACETS: FacetDef[] = [
   { key: "tip", label: "Vrsta artikla", placeholder: "Sve vrste" },
-  { key: "brend", label: "Za koji telefon", placeholder: "Svi telefoni" },
+  { key: "brend", label: "Marka telefona", placeholder: "Sve marke" },
+  { key: "model", label: "Model telefona", placeholder: "Svi modeli" },
   { key: "cena", label: "Cenovni razred", placeholder: "Sve cene" },
 ];
 
@@ -117,6 +126,7 @@ export const productPath = (item: { id: string; name: string }) =>
 
 export const kategorijaHref = (tip: string) => `/kategorija/${tip}`;
 export const brendHref = (brend: string) => `/za-telefon/${brend}`;
+
 /** Prodavnica sa unaprijed postavljenim filterom. */
 export const prodavnicaHref = (params: Record<string, string> = {}) => {
   const qs = new URLSearchParams(params).toString();

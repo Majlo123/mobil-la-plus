@@ -84,6 +84,7 @@ export function upitUQuery(upit: Partial<Upit>): string {
 function vrednost(p: Product, facetKey: string): string | undefined {
   if (facetKey === "tip") return p.typeKey;
   if (facetKey === "brend") return p.brandKey;
+  if (facetKey === "model") return p.modelKey;
   if (facetKey === "cena") return cenovniRazred(p.price) ?? undefined;
   return undefined;
 }
@@ -104,7 +105,9 @@ export function filtriraj(items: Product[], izbor: Izbor, q: string): Product[] 
       if (!v || !values.includes(v)) return false;
     }
     if (termini.length === 0) return true;
-    const tekst = normalize(`${p.name} ${p.brandLabel ?? ""} ${p.typeLabel} ${p.model ?? ""}`);
+    const tekst = normalize(
+      `${p.name} ${p.brandLabel ?? ""} ${p.typeLabel} ${p.modelLabel ?? ""}`,
+    );
     return termini.every((t) => tekst.includes(t));
   });
 }
@@ -141,7 +144,9 @@ export function opcijeFasete(
           ? p.typeLabel
           : facetKey === "brend"
             ? (p.brandLabel ?? v)
-            : (CENOVNI_LABELE[v] ?? v),
+            : facetKey === "model"
+              ? (p.modelLabel ?? v)
+              : (CENOVNI_LABELE[v] ?? v),
       );
     }
   }

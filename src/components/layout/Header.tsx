@@ -2,25 +2,28 @@ import Link from "next/link";
 import { Menu, Phone, Search, X } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
+import { KategorijeTraka } from "@/components/layout/KategorijeTraka";
 import { kategorijaHref } from "@/lib/catalog";
 import { categories } from "@/lib/data";
 import { nav, site } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 /**
- * Zaglavlje sajta — SERVER komponenta, bez ijednog bajta JS-a na klijentu.
+ * Zaglavlje sajta — SERVER komponenta, skoro bez JS-a na klijentu.
  *
- * Zašto bez JS-a: header je jedina komponenta koja se učita na SVAKOJ strani,
- * a katalog ima preko 10.000 artikala — mobilni korisnik prvo mora da dobije
- * sadržaj, ne hidrataciju menija. Sve tri interaktivne stvari u headeru rade
- * nativno:
+ * Zašto skoro bez JS-a: header je jedina komponenta koja se učita na SVAKOJ
+ * strani, a katalog ima preko 10.000 artikala — mobilni korisnik prvo mora da
+ * dobije sadržaj, ne hidrataciju menija. Sve interaktivne stvari u headeru
+ * rade nativno:
  *   - mobilni meni  → <details>/<summary> (disclosure koji browser sam vodi),
  *   - pretraga      → <form method="get"> koji vodi na /prodavnica?q=…,
  *   - navigacija    → obični linkovi.
  *
- * Cena te odluke, svesno prihvaćena:
- *   - nema podebljane „aktivne" stranice u meniju (za to treba `usePathname`);
- *     orijentaciju nose <PageHeader> naslov i putanja na samoj strani,
+ * Jedini izuzetak je traka kategorija (`KategorijeTraka`) — njoj treba
+ * `usePathname` da istakne stranu na kojoj je kupac, pa je izdvojena u svoju
+ * klijentsku komponentu umesto da povuče ceo header u hidrataciju.
+ *
+ * Cena preostale odluke, svesno prihvaćena:
  *   - staklo je uvek uključeno umesto da se pojavi na skrolu — skrol listener
  *     bi značio klijentsku komponentu radi jedne senke.
  */
@@ -72,10 +75,6 @@ function Pretraga({ id, className }: { id: string; className?: string }) {
 
 const NAV_LINK =
   "whitespace-nowrap rounded-full px-3 py-2 font-display text-[0.95rem] font-semibold tracking-[-0.012em] text-cream/85 transition-colors hover:bg-ink-700 hover:text-cream xl:text-[0.98rem]";
-
-/** Čip u traci kategorija — nizak kontrast, da ne otima pažnju od glavnog menija. */
-const CIP =
-  "shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[0.8rem] text-muted-foreground transition-colors hover:bg-brand/10 hover:text-brand-400";
 
 export function Header() {
   return (
@@ -195,29 +194,10 @@ export function Header() {
         </details>
       </div>
 
-      {/*
-        Druga traka: kategorije kao brzi ulaz u prodavnicu. Bez mega-menija —
-        13 kratkih naziva staje u jedan red na širini kontejnera, a `overflow-x`
-        je sigurnosni ventil za uže xl ekrane i uvećan font sistema.
-        Vidljivo od xl: niže bi se sudarilo sa pretragom i CTA-om, a mobilni
-        korisnik iste linkove dobija u meniju.
-      */}
+      {/* Vidljivo od xl: niže bi se sudarilo sa pretragom i CTA-om, a mobilni
+          korisnik iste linkove dobija u meniju. */}
       <div className="hidden border-t border-ink-600/70 xl:block">
-        <nav aria-label="Kategorije" className="container flex h-10 items-center gap-1">
-          <div className="no-scrollbar flex items-center gap-1 overflow-x-auto">
-            <Link
-              href="/prodavnica"
-              className={cn(CIP, "bg-ink-700 font-semibold text-cream hover:text-cream")}
-            >
-              Sva oprema
-            </Link>
-            {categories.map((c) => (
-              <Link key={c.key} href={kategorijaHref(c.key)} className={CIP}>
-                {c.short}
-              </Link>
-            ))}
-          </div>
-        </nav>
+        <KategorijeTraka />
       </div>
     </header>
   );

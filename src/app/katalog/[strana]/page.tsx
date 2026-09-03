@@ -130,7 +130,7 @@ export default function KatalogPage({ params }: { params: { strana: string } }) 
                     </span>
                     <span className="block truncate text-[0.7rem] text-muted-foreground">
                       {p.typeLabel}
-                      {p.model ? ` · ${p.model}` : ""}
+                      {p.modelLabel ? ` · ${p.modelLabel}` : ""}
                     </span>
                   </span>
                   <Cena rsd={p.price} size="sm" className="shrink-0" />

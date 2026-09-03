@@ -107,7 +107,7 @@ export function generateMetadata({
     keywords: [
       p.name,
       p.typeLabel,
-      p.model ?? "",
+      p.modelLabel ?? "",
       imaBrend(p) ? p.brandLabel : "",
       `${p.typeLabel} ${site.city}`,
       site.name,
@@ -232,9 +232,9 @@ export default function ProizvodPage({ params }: { params: { slug: string } }) {
                 {p.name}
               </h1>
 
-              {p.model ? (
+              {p.modelLabel ? (
                 <p className="mt-3 text-cream/70">
-                  Model: <span className="font-medium text-cream">{p.model}</span>
+                  Model: <span className="font-medium text-cream">{p.modelLabel}</span>
                 </p>
               ) : null}
 
@@ -359,7 +359,7 @@ function Specifikacije({ p }: { p: Product }) {
     ["Kod artikla", p.id],
     ["Vrsta", p.typeLabel],
     ["Za telefon", imaBrend(p) ? p.brandLabel : "Univerzalno / bez oznake"],
-    ...(p.model ? ([["Model", p.model]] as [string, string][]) : []),
+    ...(p.modelLabel ? ([["Model", p.modelLabel]] as [string, string][]) : []),
   ];
 
   return (

@@ -21,6 +21,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { prodajnaIzEur, prodajnaIzRsd, EUR_RSD } from "./pricing.mjs";
+import { MODELI } from "./modeli-dictionary.mjs";
 import {
   TIPOVI,
   KATEGORIJA_TIP,
@@ -28,10 +29,6 @@ import {
   TIP_PO_NAZIVU,
   BRENDOVI,
   BREND_UNIVERZALNO,
-  MODEL_U_ZAGRADI,
-  MODEL_KRAJ,
-  MODEL_PREFIKSI,
-  MODEL_SMECE,
   SUMNJIVA_CENA_EUR,
   SUMNJIVA_CENA_RSD,
 } from "./telefoni-dictionary.mjs";
@@ -127,57 +124,36 @@ function brendZa(naziv) {
   return BREND_UNIVERZALNO;
 }
 
-/** Skida boje, oznake kvaliteta i ostalo smeće sa krajeva izvučenog modela. */
-function ocistiModel(raw) {
-  let m = sredi(raw).replace(/[/,+\-–—]\s*$/, "");
-  let promenjeno = true;
-  while (promenjeno) {
-    promenjeno = false;
-    const n = normalize(m);
-    for (const smece of MODEL_SMECE) {
-      if (n.endsWith(smece)) {
-        m = m.slice(0, m.length - smece.length).replace(/[\s/,+\-–—]+$/, "");
-        promenjeno = true;
-        break;
-      }
-    }
-  }
-  // Više varijanti („A13 4G/ A135F/ M236") — zadrži prvu, ostale su iste stvari.
-  m = m.split("/")[0].trim();
-  return m.length >= 3 && m.length <= 40 ? m : null;
-}
+/* ------------------------------ Model telefona ----------------------------- */
+
+const modelNepokriveno = new Map();
 
 /**
- * Model telefona iz naziva. Prvo zagrada (najpouzdanije), pa odsečak od
- * brend-reči do prvog razdvajača.
+ * Kanonski model telefona za artikal — PREPOZNAVANJE, ne čišćenje naziva.
+ * Vidi objašnjenje na vrhu `scripts/modeli-dictionary.mjs`.
  *
- * Traži se SAMO kad je brend prepoznat — vidi komentar uz `MODEL_U_ZAGRADI` u
- * rečniku. Vraća `null` kad ništa nije sigurno: bolje prazno nego pogrešno,
- * jer se model prikazuje kupcu.
+ * Traži se prvo među modelima prepoznate marke (najuži i najsigurniji krug).
+ * Ako marka nije prepoznata („univerzalno"), pokušava se nad SVIM modelima i
+ * marka se izvodi iz pogotka — kod dela artikala je fabrička šifra jedini
+ * podatak u nazivu (`TPU CLEAR for SM-F776B`), pa bi inače i model i marka
+ * ostali prazni.
  */
 function modelZa(naziv, brend) {
-  if (brend.key === BREND_UNIVERZALNO.key) return null;
-
-  const uZagradi = naziv.match(MODEL_U_ZAGRADI);
-  if (uZagradi) {
-    const m = ocistiModel(uZagradi[1]);
-    if (m) return m;
-  }
-
-  // Nađi gde u nazivu počinje brend, pa uzmi od tamo do prvog razdvajača.
   const n = normalize(naziv);
-  let start = -1;
-  for (const re of brend.match) {
-    const hit = n.match(re);
-    if (hit && hit.index !== undefined && (start === -1 || hit.index < start)) start = hit.index;
-  }
-  if (start === -1) return null;
 
-  const odBrenda = naziv.slice(start).replace(MODEL_PREFIKSI, "");
-  const kraj = odBrenda.search(MODEL_KRAJ);
-  const m = ocistiModel(kraj > 0 ? odBrenda.slice(0, kraj) : odBrenda);
-  // Mora da sadrži cifru — „Samsung telefon" nije model.
-  return m && /\d/.test(m) ? m : null;
+  const poklapa = (m) =>
+    !m.exclude?.some((re) => re.test(n)) && m.match.some((re) => re.test(n));
+
+  for (const m of MODELI) {
+    if (m.brand !== brend.key) continue;
+    if (poklapa(m)) return m;
+  }
+
+  if (brend.key === BREND_UNIVERZALNO.key) {
+    for (const m of MODELI) if (poklapa(m)) return m;
+  }
+
+  return null;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -311,8 +287,10 @@ function ucitajGsm3g() {
 function pack(items) {
   const types = [];
   const brands = [];
+  const models = [];
   const typeIdx = new Map();
   const brandIdx = new Map();
+  const modelIdx = new Map();
 
   const upisi = (table, idx, key, label) => {
     if (!idx.has(key)) {
@@ -323,13 +301,37 @@ function pack(items) {
   };
 
   const rows = items.map((p) => {
-    const brend = brendZa(p.name);
+    let brend = brendZa(p.name);
+    const model = modelZa(p.name, brend);
+
+    // Kad je model prepoznat preko fabričke šifre a marka nije, marka se izvodi
+    // iz modela — „TPU CLEAR for SM-F776B" je Samsung, iako to u nazivu ne piše.
+    if (model && brend.key === BREND_UNIVERZALNO.key) {
+      const izModela = BRENDOVI.find((b) => b.key === model.brand);
+      if (izModela) brend = izModela;
+    }
+
+    if (!model && brend.key !== BREND_UNIVERZALNO.key) {
+      const kljuc = `${brend.key}|${p.name}`;
+      modelNepokriveno.set(kljuc, (modelNepokriveno.get(kljuc) ?? 0) + 1);
+    }
+
     const t = upisi(types, typeIdx, p.tip, TIPOVI[p.tip] ?? p.tip);
     const b = upisi(brands, brandIdx, brend.key, brend.label);
-    return [p.id, p.name, p.price, p.image, t, b, modelZa(p.name, brend)];
+
+    let m = -1;
+    if (model) {
+      if (!modelIdx.has(model.key)) {
+        modelIdx.set(model.key, models.length);
+        models.push({ key: model.key, label: model.label, brand: model.brand });
+      }
+      m = modelIdx.get(model.key);
+    }
+
+    return [p.id, p.name, p.price, p.image, t, b, m];
   });
 
-  return { types, brands, items: rows };
+  return { types, brands, models, items: rows };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -364,6 +366,22 @@ writeFileSync(
   JSON.stringify(Object.fromEntries(neklasifikovano), null, 2),
 );
 
+// Artikli sa prepoznatom markom ali BEZ modela — spisak za dopunu rečnika.
+// Grupisano po marki i sortirano po broju, da se prvo vidi gde najviše fali.
+const nepokrivenoPoBrendu = {};
+for (const [kljuc, broj] of modelNepokriveno) {
+  const [brend, naziv] = kljuc.split("|");
+  (nepokrivenoPoBrendu[brend] ??= []).push({ naziv, broj });
+}
+for (const lista of Object.values(nepokrivenoPoBrendu)) {
+  lista.sort((a, b) => b.broj - a.broj || a.naziv.localeCompare(b.naziv, "sr"));
+  lista.splice(200); // duži spisak nikome ne pomaže
+}
+writeFileSync(
+  resolve(DATA, "modeli-nepokriveno.json"),
+  JSON.stringify(nepokrivenoPoBrendu, null, 2),
+);
+
 /* -------------------------------- Izveštaj --------------------------------- */
 
 const poIzvoru = {};
@@ -374,7 +392,13 @@ for (const p of items) poTipu[p.tip] = (poTipu[p.tip] ?? 0) + 1;
 
 const bezCene = items.filter((p) => p.price === null).length;
 const saSlikom = items.filter((p) => p.image).length;
-const saModelom = packed.items.filter((r) => r[6]).length;
+const saModelom = packed.items.filter((r) => r[6] >= 0).length;
+// Marka „univerzalno" nema model po definiciji (kabl, alat), pa se ne računa u
+// imenilac — inače pokrivenost izgleda gore nego što jeste.
+const saMarkom = packed.items.filter(
+  (r) => packed.brands[r[5]].key !== "univerzalno",
+).length;
+const modelPct = saMarkom > 0 ? Math.round((saModelom / saMarkom) * 100) : 0;
 const pct = (n) => `${Math.round((n / items.length) * 100)}%`;
 
 console.log("Katalog izgrađen:");
@@ -385,7 +409,12 @@ console.log(`  po izvoru                     : ${JSON.stringify(poIzvoru)}`);
 console.log(`  po vrsti                      : ${JSON.stringify(poTipu)}`);
 console.log(`  brendova                      : ${packed.brands.length}`);
 console.log(`  sa slikom                     : ${saSlikom} (${pct(saSlikom)})`);
-console.log(`  sa modelom                    : ${saModelom} (${pct(saModelom)})`);
+console.log(`  modela u rečniku              : ${packed.models.length}`);
+console.log(`  sa markom (bez univerzalnih)  : ${saMarkom}`);
+console.log(`  sa modelom                    : ${saModelom} (${modelPct}% onih sa markom)`);
+if (modelNepokriveno.size) {
+  console.log(`  bez modela uz poznatu marku   : ${saMarkom - saModelom} → data/modeli-nepokriveno.json`);
+}
 console.log(`  bez cene                      : ${bezCene}`);
 console.log(`  za proveru cene               : ${zaProveru.length}  → data/cene-za-proveru.json`);
 if (neklasifikovano.size) {

@@ -70,8 +70,8 @@ export function ProizvodKartica({
           </Link>
         </h3>
 
-        {item.model ? (
-          <p className="mt-1 truncate text-[0.76rem] text-muted-foreground">{item.model}</p>
+        {item.modelLabel ? (
+          <p className="mt-1 truncate text-[0.76rem] text-muted-foreground">{item.modelLabel}</p>
         ) : null}
 
         {/* Cena i kontakt uvek na dnu kartice, pa su u mreži poravnati. */}
