@@ -1,0 +1,36 @@
+{
+  "name": "mobil-plus-la",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sajt servisa i prodavnice opreme za mobilne telefone Mobil Plus LA — Novi Sad",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "gsm3g": "node scripts/harvest-gsm3g.mjs",
+    "katalog": "node scripts/build-catalog.mjs"
+  },
+  "dependencies": {
+    "class-variance-authority": "0.7.0",
+    "clsx": "2.1.1",
+    "framer-motion": "11.11.17",
+    "lucide-react": "0.454.0",
+    "next": "14.2.35",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "tailwind-merge": "2.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "20.17.6",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "autoprefixer": "10.4.20",
+    "eslint": "8.57.1",
+    "eslint-config-next": "14.2.35",
+    "postcss": "8.5.10",
+    "tailwindcss": "3.4.14",
+    "tailwindcss-animate": "1.0.7",
+    "typescript": "5.6.3"
+  }
+}

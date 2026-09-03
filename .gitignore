@@ -1,0 +1,19 @@
+/node_modules
+/.next
+/out
+/build
+*.log
+.DS_Store
+.env*.local
+next-env.d.ts
+/.vercel
+
+# TypeScript inkrementalni build cache
+tsconfig.tsbuildinfo
+
+# Sirovi ulaz scrapera (scripts/harvest-gsm3g.mjs i harvest fajlovi dobavljača),
+# plus izveštaji koje ispiše scripts/build-catalog.mjs.
+#
+# Ovo su TUĐE NABAVNE CENE i ne smeju u javni repozitorijum. Za build sajta nisu
+# potrebni — potreban je samo generisani src/data/products.json.
+/data

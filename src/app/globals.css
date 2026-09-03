@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-display: "Sora", sans-serif;
+    --font-sans: "Manrope", sans-serif;
+    /* Sajt je dark-first — javljamo to browseru da sam iscrta skrol trake,
+       polja za unos i ostale kontrole u tamnoj varijanti. */
+    color-scheme: dark;
+    /* Traka za skrol u boji podloge (Firefox + noviji Chrome). */
+    scrollbar-color: #1e2732 #05070a;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    /* Osnovna veličina fonta — standardnih 16px (kompaktan, "ne-zumiran" izgled).
+       Naslovi i meni su uvećani eksplicitno tamo gde treba. */
+    font-size: 100%; /* 16px */
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    text-rendering: optimizeLegibility;
+    /* "cv05" = malo "l" sa repom (lakše se razlikuje od I/1) → bolja čitljivost */
+    font-feature-settings: "cv05";
+    letter-spacing: -0.004em;
+    line-height: 1.6;
+  }
+
+  /* Naslovi koriste display font — zbijeni razmak za premium izgled */
+  h1, h2, h3, h4 {
+    @apply font-display;
+    letter-spacing: -0.024em;
+    line-height: 1.08;
+  }
+
+  /* Telesni tekst (paragrafi) — prijatnija visina reda za duže blokove */
+  p {
+    line-height: 1.65;
+  }
+
+  ::selection {
+    @apply bg-brand text-cream;
+  }
+
+  /* Na crnoj podlozi podrazumevani fokus prsten se ne vidi — dajemo mu
+     kontrastan plavi prsten sa odmakom u boji pozadine. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-ink;
+  }
+
+  /* Chrome autofill polja boji belom pozadinom, što na tamnoj temi izgleda kao
+     greška. Senka "iznutra" je jedini način da se ta boja pregazi. */
+  input:-webkit-autofill,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill {
+    -webkit-text-fill-color: #f7fafc;
+    -webkit-box-shadow: 0 0 0 1000px #141a22 inset;
+    caret-color: #f7fafc;
+  }
+}
+
+@layer components {
+  /* Sekcijski razmak — konzistentan, kompaktan ritam */
+  .section {
+    @apply py-14 md:py-20;
+  }
+
+  /* Mala oznaka iznad naslova sekcije (eyebrow) — na crnom je čitka svetlija
+     nijansa brenda, tamnija se stopi sa podlogom. */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-400;
+  }
+
+  /* Stakleni efekat za header na skrolu — podloga je tamna, pa i staklo. */
+  .glass {
+    @apply bg-ink/85 backdrop-blur-md;
+  }
+
+  /* Gradijent preko slika: fotografije proizvoda i hero kadrovi dolaze sa
+     svetlim pozadinama, a tekst preko njih mora da ostane čitak. */
+  .img-overlay {
+    @apply absolute inset-0 bg-gradient-to-t from-ink via-ink/60 to-ink/10;
+  }
+
+  /* Tekst-balans za lepše prelome naslova */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /**
+   * Suptilna tekstura "štampane ploče" — odjek plavih traka sa logotipa.
+   * Trake pod ±45° plus točkice na raskrsnicama (vias); sve u niskoj alfi da
+   * ne otima pažnju sadržaju. Maska je gasi ka dnu, pa nema tvrde ivice
+   * na prelazu u sledeću sekciju.
+   */
+  .circuit-lines {
+    background-image:
+      radial-gradient(circle at 1px 1px, rgb(46 139 255 / 0.3) 1px, transparent 0),
+      repeating-linear-gradient(45deg, rgb(46 139 255 / 0.07) 0 1px, transparent 1px 22px),
+      repeating-linear-gradient(-45deg, rgb(46 139 255 / 0.05) 0 1px, transparent 1px 30px);
+    background-size: 44px 44px, auto, auto;
+    -webkit-mask-image: radial-gradient(80% 65% at 50% 0%, #000 0%, transparent 78%);
+    mask-image: radial-gradient(80% 65% at 50% 0%, #000 0%, transparent 78%);
+  }
+}
+
+/* Sakrij scrollbar za horizontalne trake (galerija/kategorije) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Poštuj korisnike koji smanjuju animacije */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
