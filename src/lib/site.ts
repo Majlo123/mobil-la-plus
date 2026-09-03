@@ -16,7 +16,7 @@
 const PODRAZUMEVAN_UPIT = "Zdravo, zanima me ponuda iz vaše prodavnice.";
 
 /** Domen na koji sajt ide kad se registruje i uveže. */
-const KONACNI_DOMEN = "https://mobilplusla.rs";
+const KONACNI_DOMEN = "https://www.mobil-plus-la.com";
 
 /**
  * Apsolutna adresa sajta — koristi se za canonical linkove, OG slike, sitemap,

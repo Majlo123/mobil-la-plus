@@ -6,7 +6,7 @@ import { NA_PRAVOM_DOMENU, SITE_URL } from "@/lib/site";
  * sa privatnim podacima, pa nema šta da se zabranjuje.
  *
  * IZUZETAK: dok sajt stoji na privremenom domenu (`*.vercel.app`, pre nego što
- * se uveže `mobilplusla.rs`), obilazak se ZABRANJUJE u celosti. Inače bi Google
+ * se uveže `mobil-plus-la.com`), obilazak se ZABRANJUJE u celosti. Inače bi Google
  * zapamtio privremenu adresu, a kad pravi domen proradi ista sadržina bi
  * postojala na dva mesta — pravi domen bi se takmičio sam sa sobom za poziciju.
  *

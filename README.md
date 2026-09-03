@@ -275,7 +275,7 @@ URL parametara i prikazuje ograničen broj artikala po strani. Googlebot izvrša
 klikće dugmad, pa bez tih stranica i kataloškog indeksa hiljade artikala ne bi imale nijedan
 interni link — što Google po pravilu ostavlja u „Discovered – currently not indexed".
 
-Pre objave proveri da je domen `https://mobilplusla.rs` tačan u `layout.tsx`, `sitemap.ts`,
+Pre objave proveri da je domen `https://www.mobil-plus-la.com` tačan u `layout.tsx`, `sitemap.ts`,
 `robots.ts`, `image-sitemap.xml/route.ts` i `PutanjaJsonLd.tsx`.
 
 ---
@@ -294,16 +294,16 @@ Apsolutne adrese (canonical, OG slike, sitemap, JSON-LD) dolaze iz `SITE_URL` u
 | --- | --- | --- |
 | 1 | `NEXT_PUBLIC_SITE_URL` | kad je postavljena — ovde ide pravi domen |
 | 2 | `VERCEL_PROJECT_PRODUCTION_URL` | na Vercel-u, dok pravog domena nema |
-| 3 | `https://mobilplusla.rs` | lokalni rad |
+| 3 | `https://www.mobil-plus-la.com` | lokalni rad |
 
 **Dok sajt stoji na `*.vercel.app`, `robots.txt` zabranjuje obilazak** (`Disallow: /`).
 To je namerno: da Google ne zapamti privremenu adresu i da kasnije pravi domen ne
 konkuriše sam sebi. Deljenje linka i dalje radi normalno — zabrana važi samo za pretraživače.
 
-Kad `mobilplusla.rs` proradi:
+Kad `mobil-plus-la.com` proradi:
 
 1. Vercel → Settings → Domains → dodaj domen.
-2. Settings → Environment Variables → `NEXT_PUBLIC_SITE_URL = https://mobilplusla.rs`.
+2. Settings → Environment Variables → `NEXT_PUBLIC_SITE_URL = https://www.mobil-plus-la.com`.
 3. Pokreni novi deploy (vrednost se peče u build-u) — `robots.txt` se sam otvara.
 
 Drugih promenljivih nema: sajt ne šalje mejlove i ne zove eksterne servise.
