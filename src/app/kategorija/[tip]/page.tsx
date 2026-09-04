@@ -10,6 +10,7 @@ import { PraznoStanje } from "@/components/PraznoStanje";
 import { ProizvodKartica } from "@/components/ProizvodKartica";
 import { PutanjaJsonLd } from "@/components/PutanjaJsonLd";
 import { Reveal } from "@/components/Reveal";
+import { SpisakJsonLd } from "@/components/SpisakJsonLd";
 import { Button } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { brendHref, kategorijaHref, prodavnicaHref } from "@/lib/catalog";
@@ -208,6 +209,19 @@ export default function KategorijaPage({
           { naziv: kat.label, href: kategorijaHref(kat.key) },
         ]}
       />
+
+      {/*
+        Spisak se prijavljuje samo u nefiltriranom prikazu — jedinom koji ide u
+        indeks (vidi `robots` u `generateMetadata`). Na filtriranoj strani bi
+        ItemList opisivao adresu koju Google ionako ne indeksira.
+      */}
+      {filtrirano ? null : (
+        <SpisakJsonLd
+          naziv={`${kat.label} — ${site.name}, ${site.address.city}`}
+          stavke={vitrina}
+          ukupno={svi.length}
+        />
+      )}
 
       <PageHeader
         eyebrow={`${broj(kat.count)} ${artikala(kat.count)} u ponudi`}

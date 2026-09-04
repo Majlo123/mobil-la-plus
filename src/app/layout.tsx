@@ -4,7 +4,7 @@ import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingContact } from "@/components/FloatingContact";
-import { site, SITE_URL } from "@/lib/site";
+import { ID_FIRME, site, SITE_URL } from "@/lib/site";
 
 // Fontovi sa podrškom za srpsku latinicu (č, ć, š, ž, đ) → subset "latin-ext".
 // Sora = samouveren grotesque za naslove; Manrope = vrhunska čitljivost u tekstu,
@@ -76,6 +76,21 @@ export const metadata: Metadata = {
     images: [OG_IMAGE],
   },
   robots: { index: true, follow: true },
+  /**
+   * Google Search Console — vlasništvo nad domenom je potvrđeno HTML fajlom iz
+   * `public/` (`googlebf4d410f6fb7fd1e.html`). Meta oznaka je drugi, rezervni
+   * način potvrde: ako se doda još jedna property (npr. apex domen bez `www`)
+   * ili se fajl izgubi, dovoljno je postaviti
+   * `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` na hostingu i uraditi novi deploy.
+   * Dok promenljiva nije postavljena, oznaka se ne ispisuje.
+   */
+  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? {
+        verification: {
+          google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+        },
+      }
+    : {}),
 };
 
 export const viewport: Viewport = {
@@ -130,8 +145,7 @@ const openingHoursSpecification = site.hours
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "MobilePhoneStore",
-  // Stabilan @id — vezuje sva pominjanja firme za jedan entitet.
-  "@id": `${SITE_URL}/#mobilplusla`,
+  "@id": ID_FIRME,
   name: site.name,
   // Ljudi kucaju i „mobil plus" i „mobil plus novi sad".
   alternateName: ["Mobil Plus", "MOBIL PLUS LA", "Mobil Plus Novi Sad"],

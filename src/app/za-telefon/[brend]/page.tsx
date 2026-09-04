@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { ProizvodKartica } from "@/components/ProizvodKartica";
 import { PutanjaJsonLd } from "@/components/PutanjaJsonLd";
 import { Reveal } from "@/components/Reveal";
+import { SpisakJsonLd } from "@/components/SpisakJsonLd";
 import { Button } from "@/components/ui/button";
 import { brendHref, kategorijaHref, prodavnicaHref } from "@/lib/catalog";
 import {
@@ -177,6 +178,14 @@ export default function BrendPage({ params }: { params: { brend: string } }) {
           { naziv: "Prodavnica", href: "/prodavnica" },
           { naziv: brend.label, href: brendHref(brend.key) },
         ]}
+      />
+
+      {/* Spisak prijavljuje artikle koji su i prikazani — vitrine grupa sa
+          karticama, istim redom kojim stoje na strani. */}
+      <SpisakJsonLd
+        naziv={`Oprema i delovi za ${brend.label} — ${site.name}`}
+        stavke={saKarticama.flatMap((g) => g.vitrina)}
+        ukupno={brend.count}
       />
 
       <PageHeader

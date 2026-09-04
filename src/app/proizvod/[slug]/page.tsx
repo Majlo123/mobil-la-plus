@@ -128,6 +128,19 @@ export function generateMetadata({
 
 /* ------------------------------- JSON-LD ---------------------------------- */
 
+/**
+ * Do kada ponuda važi (`priceValidUntil`).
+ *
+ * Google to polje traži uz cenu; bez njega Search Console prijavljuje
+ * upozorenje na svakom artiklu, a stariju ponudu ume da prikaže bez cene.
+ * Datum se računa u build-u, godinu dana unapred: cenovnik se osvežava sa
+ * svakim `npm run katalog` + deploy-om, pa se granica pomera zajedno sa njim i
+ * nikad ne ostane u prošlosti.
+ */
+const CENA_VAZI_DO = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+  .toISOString()
+  .slice(0, 10);
+
 function ProizvodJsonLd({ p }: { p: Product }) {
   const url = abs(putanjaProizvoda(p));
 
@@ -149,13 +162,18 @@ function ProizvodJsonLd({ p }: { p: Product }) {
       // Dostupnost svakako potvrđujemo u poruci pre slanja, pa je „InStock"
       // tačniji od „PreOrder" — artikli su iz redovnog asortimana radnje.
       availability: "https://schema.org/InStock",
+      // Sve iz kataloga je novo i nekorišćeno — bez ove oznake Google pretpostavlja
+      // ali i prijavljuje upozorenje da nedostaje.
+      itemCondition: "https://schema.org/NewCondition",
       /*
        * Cena ide u ponudu samo kad je stvarno u katalogu. Za artikal bez cene
        * se izostavlja i `priceCurrency`: valuta bez broja je za Google
        * nepotpuna ponuda (upozorenje u Search Console-u), a izmišljen broj bi
        * bio gore od nijednog.
        */
-      ...(imaCenu(p.price) ? { price: p.price, priceCurrency: "RSD" } : {}),
+      ...(imaCenu(p.price)
+        ? { price: p.price, priceCurrency: "RSD", priceValidUntil: CENA_VAZI_DO }
+        : {}),
       seller: { "@type": "Organization", name: site.name },
     },
   };

@@ -1,3 +1,4 @@
+import { SajtJsonLd } from "@/components/SajtJsonLd";
 import { Faq } from "@/components/sections/Faq";
 import { Hero } from "@/components/sections/Hero";
 import { IstaknutiProizvodi } from "@/components/sections/IstaknutiProizvodi";
@@ -23,6 +24,8 @@ import { ZastoMi } from "@/components/sections/ZastoMi";
 export default function HomePage() {
   return (
     <>
+      {/* WebSite + pretraga prodavnice — samo ovde, vidi SajtJsonLd. */}
+      <SajtJsonLd />
       <Hero />
       <UslugeServisa />
       <Kategorije />

@@ -54,6 +54,15 @@ export const SITE_URL = (
  */
 export const NA_PRAVOM_DOMENU = !new URL(SITE_URL).hostname.endsWith(".vercel.app");
 
+/**
+ * Stabilan identifikator firme u strukturiranim podacima.
+ *
+ * Isti `@id` nose `MobilePhoneStore` iz layout-a, `LocalBusiness` sa `/kontakt`
+ * i `publisher` u `WebSite` bloku — tako Google sve to spaja u JEDAN entitet,
+ * umesto da vidi tri firme sa istim imenom i adresom.
+ */
+export const ID_FIRME = `${SITE_URL}/#mobilplusla`;
+
 /** Apsolutna adresa iz putanje — `abs("/servis")` → `https://…/servis`. */
 export const abs = (putanja: string) => `${SITE_URL}${putanja}`;
 

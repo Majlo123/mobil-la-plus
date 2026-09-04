@@ -265,18 +265,61 @@ ih ikad počnemo keširati lokalno. Detaljno objašnjenje je u komentaru u
   brendu, sve kataloške strane i **svaki artikal**
 - `robots.txt` — sve otvoreno, oba sitemap-a prijavljena
 - **BreadcrumbList** (`PutanjaJsonLd`) na svakoj stranici dublje od početne
-- **LocalBusiness / Store** JSON-LD u `layout.tsx` — naziv, adresa u Novom Sadu, telefon,
-  radno vreme, koordinate
-- Open Graph i Twitter kartice za deljenje na mrežama (`public/og.jpg`, 1200×630)
+- **MobilePhoneStore** (LocalBusiness) JSON-LD u `layout.tsx` — naziv, adresa u Novom Sadu,
+  telefon, radno vreme, koordinate; isti `@id` (`ID_FIRME` iz `src/lib/site.ts`) nose i
+  strukturirani podaci na `/kontakt`, pa Google vidi jednu firmu a ne dve
+- **WebSite + SearchAction** (`SajtJsonLd`) — samo na početnoj, kako Google traži. Vezuje domen
+  za firmu i prijavljuje pretragu `/prodavnica?q=…`, pa uz rezultat za „mobil plus la" može da
+  stane i polje za pretragu
+- **Product** JSON-LD na svakom artiklu — cena, valuta, dostupnost, stanje (novo) i do kada
+  ponuda važi; artikal bez cene ide bez `price`, da ponuda ne bude nepotpuna
+- **ItemList** (`SpisakJsonLd`) na kategorijama i stranama brenda — Google zna da je strana
+  spisak artikala i koliko ih ukupno ima
+- **FAQPage** na `/servis` (početna prikazuje ista pitanja, ali ih ne prijavlja — Google traži
+  da isti FAQ prijavi samo jedna strana)
+- Open Graph i Twitter kartice za deljenje na mrežama (zvanični logotip,
+  `public/images/brend/logo.jpg`)
 - Meta naslovi i opisi na srpskom, sa lokalnim ključnim rečima
+- `noindex` na filtriranim prikazima prodavnice i kategorija — kombinacije faseta daju hiljade
+  adresa sa istim artiklima; canonical uvek pokazuje na čistu stranu
 
 **Zašto postoje `/kategorija/[tip]` i `/za-telefon/[brend]`:** prodavnica filtrira preko
 URL parametara i prikazuje ograničen broj artikala po strani. Googlebot izvršava JS, ali ne
 klikće dugmad, pa bez tih stranica i kataloškog indeksa hiljade artikala ne bi imale nijedan
 interni link — što Google po pravilu ostavlja u „Discovered – currently not indexed".
 
-Pre objave proveri da je domen `https://www.mobil-plus-la.com` tačan u `layout.tsx`, `sitemap.ts`,
-`robots.ts`, `image-sitemap.xml/route.ts` i `PutanjaJsonLd.tsx`.
+Pre objave proveri da je domen `https://www.mobil-plus-la.com` tačan u `src/lib/site.ts` —
+odatle ga uzimaju `layout.tsx`, `sitemap.ts`, `robots.ts`, `image-sitemap.xml/route.ts` i
+`PutanjaJsonLd.tsx`.
+
+### Google Search Console
+
+Sve što zavisi od koda je gotovo. Ostaje ono što se radi jednom, rukama, u Search Console-u:
+
+1. **Potvrda vlasništva.** Fajl `public/googlebf4d410f6fb7fd1e.html` je već tu i sajt ga
+   servira — **ne briši ga**, Google ga s vremena na vreme proverava ponovo. Ako se doda još
+   jedna property (npr. apex domen bez `www`), umesto novog fajla može i meta oznaka: postavi
+   `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` na Vercel-u i uradi novi deploy.
+2. **Koju property dodati.** Najbolje **Domain property** (`mobil-plus-la.com`, potvrda preko
+   DNS TXT zapisa) — ona pokriva i `www` i apex, i `http` i `https`, pa se podaci ne dele na
+   dve polovine. URL-prefix property `https://www.mobil-plus-la.com/` je alternativa i nju
+   pokriva postojeći HTML fajl.
+3. **Prijavi oba sitemap-a** (Sitemaps → Add a new sitemap): `sitemap.xml` i
+   `image-sitemap.xml`. Oba su već prijavljena i u `robots.txt`, ali ručna prijava daje
+   izveštaj o obilasku.
+4. **Zatraži indeksiranje** (URL Inspection → Request indexing) za pet glavnih strana: `/`,
+   `/servis`, `/prodavnica`, `/kontakt`, `/o-nama`. Ostalo Google nađe sam preko sitemap-a.
+
+Šta očekivati: sitemap prijavljuje preko 36.000 adresa, a Google novom sajtu ne daje takav
+obilazak odjednom — glavne strane i kategorije uđu u indeks za dan-dva do nedelju dana, rep
+kataloga mesecima. U izveštaju „Pages" je normalno da hiljade artikala stoje kao
+„Discovered – currently not indexed"; to nije greška na sajtu.
+
+**Za pretragu tipa „servis telefona blizu mene" sajt nije dovoljan** — to izbacuje **Google
+Business Profile** (nekadašnji Google My Business). Nalog se otvara zasebno na
+[business.google.com](https://business.google.com) sa istim podacima kao u `src/lib/site.ts`
+(naziv, adresa, telefon, radno vreme) — moraju biti **slovo u slovo isti**, jer Google to poredi
+sa sajtom. Kad profil proradi, dodaj ga u `site.socials` i u `sameAs` liste.
 
 ---
 
@@ -305,7 +348,8 @@ Kad se `mobil-plus-la.com` poveže (Vercel → Settings → Domains), zabrana se
 posle prvog sledećeg deploy-a — Vercel sam postavlja `VERCEL_PROJECT_PRODUCTION_URL` na
 povezani domen, nema ručnog podešavanja env promenljive.
 
-Drugih promenljivih nema: sajt ne šalje mejlove i ne zove eksterne servise.
+Jedina druga promenljiva je opciona: `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` (potvrda za Search
+Console meta oznakom, vidi gore). Sajt ne šalje mejlove i ne zove eksterne servise.
 
 ---
 

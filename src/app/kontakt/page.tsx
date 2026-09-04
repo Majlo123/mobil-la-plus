@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { PutanjaJsonLd } from "@/components/PutanjaJsonLd";
 import { Reveal } from "@/components/Reveal";
 import { Button } from "@/components/ui/button";
-import { site, SITE_URL } from "@/lib/site";
+import { ID_FIRME, site, SITE_URL } from "@/lib/site";
 
 
 export const metadata: Metadata = {
@@ -58,11 +58,11 @@ const kontaktJsonLd = {
       url: `${SITE_URL}/kontakt`,
       name: `Kontakt — ${site.name}`,
       inLanguage: "sr-RS",
-      about: { "@id": `${SITE_URL}/#mobilplusla` },
+      about: { "@id": ID_FIRME },
     },
     {
       "@type": "LocalBusiness",
-      "@id": `${SITE_URL}/#mobilplusla`,
+      "@id": ID_FIRME,
       name: site.name,
       url: SITE_URL,
       telephone: site.phoneIntl,
