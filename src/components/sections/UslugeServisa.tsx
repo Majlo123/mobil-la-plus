@@ -28,7 +28,7 @@ export function UslugeServisa() {
         <SectionHeading
           eyebrow="Servis telefona"
           title="Vršimo kompletan servis mobilnih telefona"
-          description="Koristimo alat i opremu napravljenu za mikroelektroniku. Kvar objasnimo ljudskim jezikom i cenu kažemo pre nego što uzmemo odvijač u ruke."
+          description="Koristimo alat i opremu napravljenu za mikrolemljenje. Kvar objasnimo i cenu kažemo pre nego što uzmemo alat u ruke."
         />
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2">

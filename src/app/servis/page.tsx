@@ -81,7 +81,7 @@ const DETALJI: Record<string, Detalj> = {
   servis: {
     uvod: [
       "Kvar prvo pogledamo, pa kažemo cenu i rok — rad ne počinje dok se ne dogovorimo. Za najčešće modele delovi su na lageru i telefon se obično vraća isti dan; ako deo mora da se poruči, unapred kažemo koliko se čeka.",
-      "Za svaki deo kažemo tačno šta ugrađujemo: originalni, service pack ili kvalitetan zamenski. Razlika je u ceni i u trajanju, a izbor je Vaš. Na ugrađen deo ide garancija.",
+      "Za svaki deo kažemo tačno šta ugrađujemo: originalni ili kvalitetan zamenski. Razlika je u ceni i u trajanju, a izbor je Vaš.",
     ],
     napomena:
       "Kod kvarova na matičnoj ploči i kod telefona koji su bili u vodi ne može se unapred obećati da će popravka uspeti. Ako se posle otvaranja pokaže da popravka nije isplativa, reći ćemo Vam to — pre nego što se potroši novac.",
@@ -96,7 +96,7 @@ const DETALJI: Record<string, Detalj> = {
   },
   podaci: {
     uvod: [
-      "Sa telefona koji se ne uključuje, ima razbijen ekran ili je bio u vodi vraćamo slike, kontakte i poruke. Uređaj otvaramo i radimo direktno sa memorijom, alatom i opremom napravljenom za mikroelektroniku.",
+      "Sa telefona koji se ne uključuje, ima razbijen ekran ili je bio u vodi vraćamo slike, kontakte i poruke. Uređaj otvaramo i radimo direktno sa memorijom, alatom i opremom napravljenom za mikrolemljenje.",
       "Prvo pogledamo uređaj i kažemo šta je realno, pa Vi odlučujete da li se ide dalje. Bez obećanja preko telefona i bez cene „na slepo”.",
     ],
     napomena:
@@ -209,10 +209,8 @@ export default function ServisPage() {
                 telefon ide na sto.
               </p>
               <p>
-                Radimo alatom i opremom za mikroelektroniku, pa se otvaranje ne završava
-                novim ogrebotinama i polomljenim flet kablovima. Delove koje ugrađujemo
-                držimo na lageru i prodajemo ih preko pulta, tako da znate šta ulazi u
-                Vaš telefon i po kojoj ceni.
+                Radimo alatom i opremom za mikrolemljenje, pa se otvaranje ne završava
+                novim ogrebotinama i polomljenim flet kablovima.
               </p>
               <p className="text-cream/60">
                 Ne stižete do Novog Sada? Telefon se prima i kurirskom službom — vidi{" "}
@@ -239,7 +237,6 @@ export default function ServisPage() {
           <SectionHeading
             eyebrow="Usluge"
             title="Šta radimo i šta možete da očekujete"
-            description="Sve četiri usluge dogovaraju se telefonom, Viberom ili WhatsApp-om — dovoljno je da opišete kvar i pošaljete model telefona."
           />
 
           <div className="mt-12 space-y-6">

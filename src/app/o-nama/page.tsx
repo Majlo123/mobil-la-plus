@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   // Ime firme dodaje šablon iz layout-a, pa se ovde ne ponavlja — ostaje mesta
   // za ono što ljudi zapravo kucaju uz „o nama": grad i delatnost.
   title: "O nama — servis telefona u Novom Sadu",
-  description: `${site.name} je servis mobilnih telefona i prodavnica opreme u ${site.address.street}, ${site.address.city}. Ko smo, kako radimo i zašto cenu kažemo pre nego što se uzme odvijač u ruke.`,
+  description: `${site.name} je servis mobilnih telefona i prodavnica opreme u ${site.address.street}, ${site.address.city}. Ko smo, kako radimo i zašto cenu kažemo pre nego što se uzme alat u ruke.`,
   alternates: { canonical: "/o-nama" },
   openGraph: {
     type: "website",
@@ -46,7 +46,7 @@ export default function ONamaPage() {
       <PageHeader
         eyebrow="O nama"
         title="Servis i oprema za telefone, na jednom mestu"
-        description={`${site.name} je servis mobilnih telefona i prodavnica opreme u ulici ${site.address.street} u Novom Sadu. Isti delovi koje ugrađujemo stoje i na polici — sa cenom, bez pogađanja.`}
+        description={`${site.name} je servis mobilnih telefona i prodavnica opreme u ulici ${site.address.street} u Novom Sadu.`}
       />
 
       {/* Ko smo + vizit karta */}
@@ -64,17 +64,15 @@ export default function ONamaPage() {
               <p>
                 Telefon koji ostavite otvara se ovde, u našoj radionici — ne šaljemo
                 uređaje nekom trećem i ne primamo posao koji ne umemo da završimo.
-                Radimo alatom i opremom napravljenom za mikroelektroniku, pa se
+                Radimo alatom i opremom napravljenom za mikrolemljenje, pa se
                 otvaranje ne završava novim ogrebotinama i pokidanim flet kablovima.
               </p>
               <p>
                 Uz servis držimo prodavnicu: maske, zaštitna stakla, baterije, punjače,
-                kablove i sitnu opremu. To nisu dva odvojena posla — delovi koje
-                ugrađujemo su isti oni koji stoje na polici, pa kad kažemo da nešto
-                imamo, deo je u fioci, a ne kod dobavljača.
+                kablove i sitnu opremu.
               </p>
               <p>
-                Cenu i rok kažemo pre nego što se uzme odvijač u ruke. Ako popravka
+                Cenu i rok kažemo pre nego što se uzme alat u ruke. Ako popravka
                 nije isplativa, i to ćemo reći — to je najkraći način da nam se čovek
                 vrati i sledeći put.
               </p>
@@ -98,7 +96,6 @@ export default function ONamaPage() {
           <SectionHeading
             eyebrow="Šta radimo"
             title="Dve stvari, i obe do kraja"
-            description="Servis i prodaja opreme rade jedno za drugo: iz servisa znamo koji delovi traju, a iz prodavnice ih imamo na lageru kad zatrebaju."
           />
 
           <div className="mt-12 grid gap-5 lg:grid-cols-2">
@@ -110,7 +107,7 @@ export default function ONamaPage() {
                 <h3 className="mt-5 text-xl font-bold text-cream">Servis mobilnih telefona</h3>
                 <p className="mt-2.5 text-[0.95rem] leading-relaxed text-cream/70">
                   Kvar prvo pogledamo, pa kažemo cenu i rok. Za deo koji ugrađujemo
-                  kažemo tačno šta je — originalni, service pack ili kvalitetan
+                  kažemo tačno šta je — originalni ili kvalitetan
                   zamenski — i na njega ide garancija.
                 </p>
 

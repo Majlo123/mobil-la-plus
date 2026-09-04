@@ -220,7 +220,7 @@ export const usluge: Usluga[] = [
     key: "podaci",
     title: "Spašavanje podataka sa uništenih telefona",
     description:
-      "Najsavremenijim metodama vraćamo slike, kontakte i poruke i sa telefona koji više ne pale — kada drugi kažu da nema šanse.",
+      "Najsavremenijim metodama vraćamo slike, kontakte i poruke i sa telefona koji su uništeni i više se ne pale — kada drugi kažu da nema šanse.",
     icon: DatabaseBackup,
   },
   {
@@ -245,7 +245,7 @@ export const advantages: Advantage[] = [
   {
     title: "Profesionalna oprema",
     description:
-      "Radimo alatom i opremom napravljenom za mikroelektroniku — bez improvizacije i bez dodatnih šteta na uređaju.",
+      "Radimo alatom i opremom napravljenom za mikrolemljenje — bez improvizacije i bez dodatnih šteta na uređaju.",
     icon: Settings,
   },
   {
@@ -257,13 +257,13 @@ export const advantages: Advantage[] = [
   {
     title: "Garancija na ugrađene delove",
     description:
-      "Na svaki ugrađen deo dajemo garanciju. Kažemo tačno da li je deo originalan, service pack ili kvalitetan zamenski.",
+      "Na svaki ugrađen deo dajemo garanciju. Kažemo tačno da li je deo originalan ili kvalitetan zamenski.",
     icon: ShieldCheck,
   },
   {
     title: "Zadovoljstvo kupaca",
     description:
-      "Objasnimo kvar ljudskim jezikom i damo cenu pre početka rada — da znate na čemu ste.",
+      "Objasnimo kvar i damo cenu pre početka rada — da znate na čemu ste.",
     icon: Users,
   },
 ];
@@ -279,7 +279,7 @@ export const faq: Faq[] = [
   },
   {
     q: "Ugrađujete originalne ili zamenske delove?",
-    a: "Oba — izbor je Vaš. Objasnimo razliku u ceni i kvalitetu (originalni, service pack, kvalitetan zamenski) i vi odlučujete. Na svaki ugrađen deo ide garancija.",
+    a: "Oba — izbor je Vaš. Objasnimo razliku u ceni i kvalitetu (originalni, kvalitetan zamenski) i vi odlučujete. Na svaki ugrađen deo ide garancija.",
   },
   {
     q: "Da li su cene na sajtu konačne?",
@@ -295,6 +295,6 @@ export const faq: Faq[] = [
   },
   {
     q: "Može li se telefon spasiti ako je pao u vodu?",
-    a: "Često može, ali je bitno da se ne uključuje i ne puni. Donesite ga što pre — što duže vlaga stoji, veća je korozija. Radimo i spašavanje podataka sa uređaja koji više ne pale.",
+    a: "Često može, ali je bitno da se ne uključuje i ne puni. Donesite ga što pre — što duže vlaga stoji, veća je korozija. Radimo i spašavanje podataka sa uređaja koji su uništeni i više se ne pale.",
   },
 ];

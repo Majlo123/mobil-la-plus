@@ -29,7 +29,7 @@ export function ZastoMi() {
       <div className="container">
         <SectionHeading
           eyebrow={`Zašto ${site.name}`}
-          title="Majstor koji objasni kvar, pa onda uzme odvijač"
+          title="Majstor koji objasni kvar, pa onda uzme alat"
           description="Bez naduvanih obećanja: kažemo šta je kvar, koliko košta, koliko traje i koji deo ulazi u telefon. Ako nešto ne možemo, kažemo i to."
         />
 

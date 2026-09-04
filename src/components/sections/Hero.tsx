@@ -47,8 +47,8 @@ export function Hero() {
 
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-cream/70">
             Zamena ekrana i baterije, skidanje Google naloga (FRP) i spašavanje
-            podataka sa uređaja koji više ne pale. Uz servis — maske, zaštitna
-            stakla, punjači i kablovi, sa cenom koja stoji na sajtu.
+            podataka sa uređaja koji su uništeni i više se ne pale. Uz servis —
+            maske, zaštitna stakla, punjači i kablovi, sa cenom koja stoji na sajtu.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
