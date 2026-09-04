@@ -210,7 +210,7 @@ export default function ServisPage() {
               </p>
               <p>
                 Radimo alatom i opremom za mikrolemljenje, pa se otvaranje ne završava
-                novim ogrebotinama i polomljenim flet kablovima.
+                novim ogrebotinama i pokidanim flet kablovima.
               </p>
               <p className="text-cream/60">
                 Ne stižete do Novog Sada? Telefon se prima i kurirskom službom — vidi{" "}

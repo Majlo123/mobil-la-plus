@@ -255,12 +255,6 @@ export const advantages: Advantage[] = [
     icon: ThumbsUp,
   },
   {
-    title: "Garancija na ugrađene delove",
-    description:
-      "Na svaki ugrađen deo dajemo garanciju. Kažemo tačno da li je deo originalan ili kvalitetan zamenski.",
-    icon: ShieldCheck,
-  },
-  {
     title: "Zadovoljstvo kupaca",
     description:
       "Objasnimo kvar i damo cenu pre početka rada — da znate na čemu ste.",
