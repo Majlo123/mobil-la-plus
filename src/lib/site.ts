@@ -97,9 +97,8 @@ export const site = {
   },
 
   hours: [
-    // ZAMENI: pravo radno vreme radnje.
-    { day: "Ponedeljak – Petak", time: "09:00 – 19:00" },
-    { day: "Subota", time: "09:00 – 14:00" },
+    { day: "Ponedeljak – Petak", time: "09:00 – 18:00" },
+    { day: "Subota", time: "09:00 – 15:00" },
     { day: "Nedelja", time: "Zatvoreno" },
   ],
 
