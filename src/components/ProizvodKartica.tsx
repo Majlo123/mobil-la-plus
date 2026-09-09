@@ -49,9 +49,7 @@ export function ProizvodKartica({
         className="relative block aspect-[4/3] overflow-hidden bg-ink-700"
       >
         <ProductThumb
-          src={item.image}
-          name={item.name}
-          typeKey={item.typeKey}
+          artikal={item}
           sizes={THUMB_SIZES}
           className="h-full w-full transition-transform duration-500 group-hover:scale-105"
         />

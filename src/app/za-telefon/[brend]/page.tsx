@@ -9,13 +9,17 @@ import { PutanjaJsonLd } from "@/components/PutanjaJsonLd";
 import { Reveal } from "@/components/Reveal";
 import { SpisakJsonLd } from "@/components/SpisakJsonLd";
 import { Button } from "@/components/ui/button";
-import { brendHref, kategorijaHref, prodavnicaHref } from "@/lib/catalog";
+import { SectionHeading } from "@/components/ui/section-heading";
+import { brendHref, kategorijaHref, modelHref, prodavnicaHref } from "@/lib/catalog";
 import {
   getProductsByBrand,
+  modelsByBrand,
   productBrands,
+  type ModelInfo,
   type Product,
 } from "@/lib/products";
 import { site } from "@/lib/site";
+import { artikala } from "@/lib/tekst";
 
 /**
  * Strana po brendu telefona — „sve za Samsung", „sve za iPhone".
@@ -59,19 +63,6 @@ const UZ_UGRADNJU = ["ekrani", "baterije", "delovi"];
 
 const broj = (n: number) => n.toLocaleString("sr-RS");
 
-/**
- * Srpska množina — brendovi idu od dva artikla (iPro) do preko trinaest hiljada
- * (Samsung), pa bez ovoga u naslovu piše „2 artikala". Isti helper stoji i na
- * kategorijskoj strani; pri sledećem dodiru na `src/lib` seli se tamo.
- */
-function artikala(n: number): string {
-  const jedinice = n % 10;
-  const desetice = n % 100;
-  if (jedinice === 1 && desetice !== 11) return "artikal";
-  if (jedinice >= 2 && jedinice <= 4 && (desetice < 12 || desetice > 14)) return "artikla";
-  return "artikala";
-}
-
 type Grupa = {
   key: string;
   label: string;
@@ -106,6 +97,100 @@ function grupePoVrsti(items: Product[]): Grupa[] {
         .slice(0, U_GRUPI),
     }))
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "sr"));
+}
+
+/* ------------------------------ Modeli marke ------------------------------- */
+
+/**
+ * Serija modela izvedena iz naziva („Galaxy S23 Ultra" → „Galaxy S").
+ *
+ * Samsung ima 317 modela — jedan spisak od 317 linkova je zid kroz koji niko ne
+ * gleda, a spisak nam treba ceo, jer je ovo JEDINI interni put do 1.367 strana
+ * modela. Zato se grupiše po onome što kupac i sam zna: seriji telefona.
+ *
+ * Serija se ne čita iz rečnika (koji je nema) nego iz naziva: sve reči do prve
+ * koja sadrži cifru, plus slovni deo te reči — „Galaxy A54 5G" → „Galaxy A",
+ * „Galaxy Note 20 Ultra" → „Galaxy Note", „Moto G5 Plus" → „Moto G", „P8 Lite"
+ * → „P". Nazivi bez ijedne cifre („Galaxy Ace Plus") daju prve dve reči, pa
+ * ostanu uz brojane rođake („Galaxy Ace 4").
+ */
+function serijaModela(label: string): string {
+  const reci = label.split(/\s+/);
+  const prvaSaCifrom = reci.findIndex((rec) => /\d/.test(rec));
+  if (prvaSaCifrom === -1) return reci.slice(0, 2).join(" ");
+
+  const slovniDeo = reci[prvaSaCifrom].replace(/\d.*$/, "");
+  return [...reci.slice(0, prvaSaCifrom), slovniDeo].filter(Boolean).join(" ") || reci[0];
+}
+
+/**
+ * Naslov grupe. Serija često ne nosi marku („P", „Galaxy A", „Blade A"), pa se
+ * marka dodaje ispred — ali samo kad je već nema u seriji, da ne ispadne „Nokia
+ * Nokia N". Poređenje ide po rečima jer nazivi marki umeju da budu složeni
+ * („Apple / iPhone", „Xiaomi / Redmi / Poco"): za „iPhone" je marka suvišna, za
+ * „iPad" nije.
+ */
+function naslovSerije(serija: string, brendLabel: string): string {
+  const reciMarke = brendLabel.toLocaleLowerCase("sr").split(/[\s/]+/).filter(Boolean);
+  const prvaRec = serija.split(/\s+/)[0].toLocaleLowerCase("sr");
+  if (reciMarke.includes(prvaRec)) return serija;
+  return `${brendLabel.split(/[\s/]+/)[0]} ${serija}`;
+}
+
+/** Ispod ovoliko modela serija nema svoje zaglavlje nego ide u „Ostali modeli". */
+const MIN_U_SERIJI = 2;
+
+/** Ključ zbirne grupe — nije naziv serije, pa ne može da se sudari sa pravim. */
+const OSTALI = "|ostali";
+
+type Serija = {
+  key: string;
+  naslov: string;
+  /** Ukupno artikala kroz sve modele serije — po tome se serije i ređaju. */
+  count: number;
+  modeli: ModelInfo[];
+};
+
+/**
+ * Modeli marke, složeni u serije. Redosled je isti kao svuda na sajtu — po
+ * broju artikala opadajuće — pa serija za koju stvarno imamo asortiman stoji na
+ * vrhu, a usamljeni modeli („Galaxy Nexus", „Galaxy Pocket") se skupljaju u
+ * jednu grupu na dnu umesto da svaki dobije svoje zaglavlje.
+ */
+function serijeModela(modeli: ModelInfo[], brendLabel: string): Serija[] {
+  const mapa = new Map<string, ModelInfo[]>();
+  for (const m of modeli) {
+    const kljuc = serijaModela(m.label);
+    const grupa = mapa.get(kljuc);
+    if (grupa) grupa.push(m);
+    else mapa.set(kljuc, [m]);
+  }
+
+  const serije: Serija[] = [];
+  const ostali: ModelInfo[] = [];
+  for (const [kljuc, clanovi] of mapa) {
+    if (clanovi.length < MIN_U_SERIJI) ostali.push(...clanovi);
+    else
+      serije.push({
+        key: kljuc,
+        naslov: naslovSerije(kljuc, brendLabel),
+        count: clanovi.reduce((zbir, m) => zbir + m.count, 0),
+        modeli: clanovi,
+      });
+  }
+
+  serije.sort((a, b) => b.count - a.count || a.naslov.localeCompare(b.naslov, "sr"));
+
+  if (ostali.length > 0) {
+    serije.push({
+      key: OSTALI,
+      naslov: "Ostali modeli",
+      count: ostali.reduce((zbir, m) => zbir + m.count, 0),
+      modeli: ostali.sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "sr")),
+    });
+  }
+
+  return serije;
 }
 
 /* -------------------------------- Metadata -------------------------------- */
@@ -170,6 +255,7 @@ export default function BrendPage({ params }: { params: { brend: string } }) {
   const ostaleVrste = grupe.slice(GRUPA_SA_KARTICAMA);
   const imaServis = grupe.some((g) => UZ_UGRADNJU.includes(g.key));
   const drugiBrendovi = productBrands().filter((b) => b.key !== brend.key);
+  const serije = serijeModela(modelsByBrand(brend.key), brend.label);
 
   return (
     <>
@@ -227,6 +313,16 @@ export default function BrendPage({ params }: { params: { brend: string } }) {
                 <p className="mt-0.5 text-sm text-muted-foreground">
                   Napišite nam tačan model {brend.label} telefona — imamo i ono
                   što nije na sajtu, a odgovaramo isti dan.
+                  {serije.length > 0 ? (
+                    <>
+                      {" "}
+                      Ili{" "}
+                      <a href="#modeli" className="font-medium text-brand-400 hover:underline">
+                        izaberite model sa spiska
+                      </a>
+                      .
+                    </>
+                  ) : null}
                 </p>
               </div>
             </div>
@@ -338,6 +434,48 @@ export default function BrendPage({ params }: { params: { brend: string } }) {
           ) : null}
         </div>
       </section>
+
+      {/*
+        Spisak modela je istovremeno i navigacija za kupca („koji tačno telefon
+        imate?") i jedini interni put do strana modela — zato su SVI modeli
+        marke ovde kao pravi `<Link>`, bez „prikaži još" na klik. Grupisano po
+        seriji, jer 317 Samsung modela u jednoj gomili niko ne čita.
+      */}
+      {serije.length > 0 ? (
+        <section id="modeli" className="section scroll-mt-24 border-t border-ink-600">
+          <div className="container">
+            <SectionHeading
+              eyebrow="Za koji model"
+              title="Izaberite svoj model"
+              description={`Broj pored modela je koliko artikala imamo baš za taj telefon. Ako vaš ${brend.label} nije na spisku, pišite nam — imamo i ono što nije na sajtu.`}
+            />
+
+            <div className="mt-8 space-y-8">
+              {serije.map((s) => (
+                <div key={s.key}>
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    {s.naslov}
+                  </h3>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {s.modeli.map((m) => (
+                      <Link
+                        key={m.key}
+                        href={modelHref(m.brandKey, m.key)}
+                        className="inline-flex items-center gap-2 rounded-full border border-ink-600 bg-ink-800 px-3.5 py-1.5 text-sm text-cream/85 transition-colors hover:border-brand-500 hover:text-brand-400"
+                      >
+                        {m.label}
+                        <span className="text-[0.7rem] tabular-nums text-muted-foreground">
+                          {broj(m.count)}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="section border-t border-ink-600 bg-ink-800/40">
         <div className="container">

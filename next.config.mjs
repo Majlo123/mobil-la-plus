@@ -6,6 +6,14 @@ const nextConfig = {
     // adrese, ne lokalne kopije (vidi README, „Slike artikala"). Bez ovih hostova
     // svaka slika kroz `next/image` ruši render stranice.
     //
+    // Spisak OSTAJE i posle prelaska na `/slika/[slug]`: ta ruta preuzima sliku
+    // sa dobavljača serverski (`fetch`, ne `next/image`), ali `remotePatterns`
+    // je jedina evidencija odakle slike smeju da dolaze i pukla bi svaka strana
+    // koja se sutra vrati na direktnu adresu. Za samu `/slika/...` adresu ovde
+    // nema šta da se doda — `next/image` sa putanjom koja počinje sa „/" tretira
+    // sliku kao lokalnu i ne proverava je ni po kakvom spisku (`images.
+    // localPatterns` postoji tek od Next-a 15).
+    //
     // Upisana su oba oblika (sa i bez `www`): gsmexpert i vipmobil dobijaju
     // fiksni prefiks u `scripts/build-catalog.mjs`, ali gsm3g harvest nosi
     // apsolutne adrese onako kako stoje na njihovom sajtu.

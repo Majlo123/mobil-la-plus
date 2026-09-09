@@ -65,6 +65,59 @@ export function trebaOptimizaciju(src: string | undefined, kadar: Kadar): boolea
   return kadar === "detalj" && src.includes("vipmobil.net") && !src.includes("/rs_");
 }
 
+/* -------------------------- Slike na našem domenu -------------------------- */
+
+/**
+ * Adresa fotografije artikla NA NAŠEM DOMENU.
+ *
+ * ZAŠTO POSTOJI: Google Images indeksira sliku pod domenom koji je SERVIRA. Dok
+ * je `<img src>` puna adresa na `gsmexpert.rs` ili `vipmobil.net`, ta slika u
+ * Google Images pripada njima — koliko god dobar bio naš alt tekst i naslov
+ * strane. Prijaviti tuđu adresu u našem image sitemap-u ne pomaže: Google
+ * prijavljene slike sa tuđeg hosta ignoriše bez cross-domain potvrde u Search
+ * Console-u, a taj domen nije naš.
+ *
+ * Zato ide preko `/slika/[slug]` rute: ona preuzme sliku sa dobavljača i
+ * servira je sa našeg domena, uz keširanje na CDN-u (vidi route handler).
+ *
+ * Ime fajla je namerno pun slug artikla — u Google Images naziv fajla je jedan
+ * od signala o čemu je slika, pa `/slika/ekran-za-iphone-13-ge-13506.jpg` govori
+ * više nego `93301190-b149-431b-b7b2-bf271b6a1689_w270.jpg` kod dobavljača.
+ *
+ * Ekstenzija je uvek `.jpg` iako deo izvora vraća PNG. Google ide po
+ * `Content-Type` zaglavlju, ne po ekstenziji, a jedna ekstenzija znači da se
+ * adresa slike izvodi iz slug-a bez ijednog pogleda u katalog.
+ *
+ * `kadar` bira veličinu koju ruta traži od dobavljača — isti izbor kao kod
+ * `slikaZa`, samo prenet u query. Adresa BEZ query-ja (kadar „kartica") je ona
+ * koja stoji na svim spiskovima i koja ide u image sitemap; „detalj" postoji da
+ * stranica artikla ne izgubi oštrinu koju danas ima (vidi `izvorZaIndeks`).
+ */
+export const nasaSlika = (slug: string, kadar: Kadar = "kartica") =>
+  kadar === "detalj" ? `/slika/${slug}.jpg?k=detalj` : `/slika/${slug}.jpg`;
+
+/**
+ * Koju veličinu ruta traži od dobavljača.
+ *
+ * Nije isto što i `slikaZa(src, "detalj")`: tamo vipmobil daje original od
+ * 3264×3264 i preko 1 MB, što je u redu za jedan artikal koji je neko otvorio,
+ * ali ne i za 12.479 fotografija koje Googlebot obiđe redom — to bi bilo blizu
+ * 14 GB saobraćaja po obilasku.
+ *
+ * Ovde se zato uzima najveća varijanta koja je i dalje lagana:
+ *   gsm3g      `_w1000` → 1000×1000, 23–58 kB
+ *   gsmexpert  `w=500`  →  500×500,  ~120 kB
+ *   vipmobil   `rs_`    →  300×300,  ~24 kB   (nema srednju veličinu)
+ *
+ * Za Google Images je i 300 px dovoljno da slika uđe u indeks — rang mnogo više
+ * zavisi od naziva fajla, alt teksta i sadržaja strane oko slike.
+ *
+ * To je tačno kadar „kartica"; funkcija postoji da bi ta veza bila NAMERNA i
+ * imenovana — kad bi neko sutra povećao karticu, ovde se vidi da to menja i ono
+ * što Googlebot povlači 33.834 puta.
+ */
+export const izvorZaIndeks = (src: string) => slikaZa(src, "kartica") ?? src;
+
 /**
  * Placeholder koji vipmobil vraća za artikle bez prave fotografije.
  * Takva slika nije fotografija proizvoda, pa je bolje prikazati naš brendiran

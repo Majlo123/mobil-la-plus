@@ -8,16 +8,22 @@ import { KontaktDugmad } from "@/components/KontaktDugmad";
 import { ProductThumb } from "@/components/ProductThumb";
 import { ProizvodKartica } from "@/components/ProizvodKartica";
 import { PutanjaJsonLd } from "@/components/PutanjaJsonLd";
-import { brendHref, kategorijaHref } from "@/lib/catalog";
+import { brendHref, kategorijaHref, modelHref, modelTipHref } from "@/lib/catalog";
+import { altSlike } from "@/lib/opis-slike";
 import { formatRsd, imaCenu } from "@/lib/pricing";
 import { site, SITE_URL } from "@/lib/site";
+import { nasaSlika } from "@/lib/slike";
 import { cn } from "@/lib/utils";
 import {
+  getModel,
   getProductBySlug,
+  getProductsByModelAndType,
   productDescription,
   productHighlights,
   relatedProducts,
   staticProductParams,
+  PRAG_ZA_TIP_STRANU,
+  type ModelInfo,
   type Product,
 } from "@/lib/products";
 
@@ -28,7 +34,6 @@ import {
  * dugmad za Viber/WhatsApp/Instagram/telefon jedini put do kupovine i mora
  * da stoji odmah pod cenom, pre bilo kog opisnog teksta.
  */
-
 
 /** Slika koja ide u OG kad artikal nema fotografiju (isti fallback kao layout). */
 const OG_FALLBACK = "/images/brend/logo.jpg";
@@ -62,6 +67,26 @@ const putanjaProizvoda = (p: Product) => `/proizvod/${p.slug}`;
 /** Brend ima smisla prikazati samo kad je stvarni proizvođač telefona. */
 const imaBrend = (p: Product): p is Product & { brandKey: string; brandLabel: string } =>
   Boolean(p.brandKey && p.brandLabel && p.brandKey !== "univerzalno");
+
+/**
+ * Model artikla iz kataloga — `undefined` kad artikal nije vezan ni za jedan
+ * (univerzalna oprema, alat) ili kad ključ ispadne iz kataloga posle osvežavanja.
+ *
+ * Ne koristi se `p.modelLabel` za linkove: adresa strane modela počinje markom,
+ * a marku modela kanonski zna samo `getModel()` — `p.brandKey` je marka ARTIKLA
+ * i za tuđi URL nije garancija.
+ */
+const modelArtikla = (p: Product): ModelInfo | undefined =>
+  p.modelKey ? getModel(p.modelKey) : undefined;
+
+/**
+ * Ima li model svoju stranu po vrsti („Ekrani za Galaxy S23").
+ *
+ * Prave se samo kombinacije sa bar `PRAG_ZA_TIP_STRANU` artikala, pa link ka
+ * kombinaciji ispod praga ne bi bio tanka strana nego 404.
+ */
+const imaStranuVrste = (p: Product, model: ModelInfo): boolean =>
+  getProductsByModelAndType(model.key, p.typeKey).length >= PRAG_ZA_TIP_STRANU;
 
 /**
  * Google u rezultatu odseca opis na oko 160 znakova. Odsecamo sami i to na
@@ -119,9 +144,12 @@ export function generateMetadata({
       url: abs(canonical),
       title: `${p.name} | ${site.name}`,
       description,
-      // Katalog čuva pune adrese fotografija sa sajtova dobavljača, pa ovde
-      // nema `abs()`; relativni fallback rešava `metadataBase` iz layout-a.
-      images: [{ url: p.image ?? OG_FALLBACK, alt: p.name }],
+      // Slika ide sa NAŠEG domena, preko `/slika/[slug]`, a ne punom adresom
+      // dobavljača iz kataloga: OG karticu koja pokazuje na tuđi host pola
+      // mreža (Viber, WhatsApp, Facebook) ne prikaže, a i kad je prikaže,
+      // pregled naše strane vuče sliku sa servera nad kojim nemamo kontrolu.
+      // Adresa je apsolutna jer OG čitači ne razrešavaju relativne putanje.
+      images: [{ url: abs(p.image ? nasaSlika(p.slug) : OG_FALLBACK), alt: altSlike(p) }],
     },
   };
 }
@@ -153,7 +181,12 @@ function ProizvodJsonLd({ p }: { p: Product }) {
     sku: p.id,
     // Slika ulazi u strukturirane podatke samo kad postoji prava fotografija —
     // brendiran placeholder u Google rezultatu ne govori ništa o artiklu.
-    ...(p.image ? { image: [p.image] } : {}),
+    //
+    // Prijavljuje se NAŠA adresa (`/slika/[slug]`), ista ona koja stoji u
+    // `/image-sitemap.xml` i u `<img>` na strani. Da ovde stoji adresa
+    // dobavljača, Google bi za isti artikal video tri različite slike i nijednu
+    // ne bi vezao za našu stranu — a ceo posao oko Google slika je u toj vezi.
+    ...(p.image ? { image: [abs(nasaSlika(p.slug))] } : {}),
     ...(imaBrend(p) ? { brand: { "@type": "Brand", name: p.brandLabel } } : {}),
     url,
     offers: {
@@ -220,12 +253,10 @@ export default function ProizvodPage({ params }: { params: { slug: string } }) {
             {/* Vizual */}
             <div className="overflow-hidden rounded-2xl border border-ink-600 bg-ink-800 shadow-card lg:sticky lg:top-28 lg:self-start">
               <ProductThumb
-                src={p.image}
-                name={p.name}
-                typeKey={p.typeKey}
-                code={p.id}
+                artikal={p}
                 // Ovde se slika gleda izbliza, pa se od izvora traži najveća
-                // varijanta (vidi src/lib/slike.ts).
+                // varijanta (vidi src/lib/slike.ts); uz nju se ispisuje i
+                // kataloški kod kad fotografije nema.
                 kadar="detalj"
                 sizes="(max-width: 1024px) 100vw, 44vw"
                 priority
@@ -250,11 +281,7 @@ export default function ProizvodPage({ params }: { params: { slug: string } }) {
                 {p.name}
               </h1>
 
-              {p.modelLabel ? (
-                <p className="mt-3 text-cream/70">
-                  Model: <span className="font-medium text-cream">{p.modelLabel}</span>
-                </p>
-              ) : null}
+              <ModelRed p={p} />
 
               {/* Cena i kanali kontakta — jedini način naručivanja. */}
               <div className="mt-6 rounded-2xl border border-ink-600 bg-ink-800 p-5 shadow-card">
@@ -343,6 +370,40 @@ function Oznaka({
   );
 }
 
+/**
+ * Red „Model: …" ispod naslova.
+ *
+ * Kupac je do artikla stigao pretragom po modelu („maska za S23"), pa mu je
+ * susedna ponuda za isti telefon prvo sledeće pitanje — zato je model link, a
+ * ne samo tekst. Kad model postoji u katalogu ali nema svoju stranu, ostaje
+ * običan tekst (isto kao pre): mrtav link je gori od nijednog.
+ */
+function ModelRed({ p }: { p: Product }) {
+  const model = modelArtikla(p);
+
+  if (model) {
+    return (
+      <p className="mt-3 text-cream/70">
+        Model:{" "}
+        <Link
+          href={modelHref(model.brandKey, model.key)}
+          className="font-medium text-brand-400 hover:underline"
+        >
+          {model.label}
+        </Link>
+      </p>
+    );
+  }
+
+  if (!p.modelLabel) return null;
+
+  return (
+    <p className="mt-3 text-cream/70">
+      Model: <span className="font-medium text-cream">{p.modelLabel}</span>
+    </p>
+  );
+}
+
 function Putanja({ p }: { p: Product }) {
   return (
     <nav
@@ -373,11 +434,33 @@ function Putanja({ p }: { p: Product }) {
 }
 
 function Specifikacije({ p }: { p: Product }) {
-  const redovi: [string, string][] = [
+  const model = modelArtikla(p);
+
+  // Vrednost je `ReactNode`, a ne `string`, jer model vodi na svoju stranu —
+  // tabela specifikacije je mesto na kom kupac i traži „a šta još imate za ovaj
+  // telefon".
+  const redModela: [string, ReactNode][] = model
+    ? [
+        [
+          "Model",
+          <Link
+            key={model.key}
+            href={modelHref(model.brandKey, model.key)}
+            className="text-brand-400 hover:underline"
+          >
+            {model.label}
+          </Link>,
+        ],
+      ]
+    : p.modelLabel
+      ? [["Model", p.modelLabel]]
+      : [];
+
+  const redovi: [string, ReactNode][] = [
     ["Kod artikla", p.id],
     ["Vrsta", p.typeLabel],
     ["Za telefon", imaBrend(p) ? p.brandLabel : "Univerzalno / bez oznake"],
-    ...(p.modelLabel ? ([["Model", p.modelLabel]] as [string, string][]) : []),
+    ...redModela,
   ];
 
   return (
@@ -407,21 +490,50 @@ function Specifikacije({ p }: { p: Product }) {
 
 function SrodniProizvodi({ p }: { p: Product }) {
   const srodni = relatedProducts(p, 4);
-  if (srodni.length === 0) return null;
+  const model = modelArtikla(p);
+  if (srodni.length === 0 && !model) return null;
 
   return (
     <section className="mt-16 border-t border-ink-600 pt-10">
       <h2 className="font-display text-2xl font-bold text-cream">
         Slični artikli
       </h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Iz iste vrste i za isti telefon — sa cenom i kontaktom na kartici.
-      </p>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {srodni.map((item) => (
-          <ProizvodKartica key={item.id} item={item} />
-        ))}
-      </div>
+      {srodni.length > 0 ? (
+        <p className="mt-2 text-sm text-muted-foreground">
+          Iz iste vrste i za isti telefon — sa cenom i kontaktom na kartici.
+        </p>
+      ) : null}
+
+      {/* Četiri kartice su uzorak; cela ponuda za taj telefon je na strani
+          modela. Naziv vrste ne ide u rečenicu („Svi Zaštitna stakla i folije
+          za…") nego stoji sam u linku — vrste su raznog roda i broja, pa bi
+          svaka duža formulacija razbila slaganje. */}
+      {model ? (
+        <div className="mt-5 flex flex-wrap gap-2">
+          <Link
+            href={modelHref(model.brandKey, model.key)}
+            className="inline-flex items-center rounded-full border border-ink-600 bg-ink-800 px-4 py-2 text-sm font-medium text-cream/85 transition-colors hover:border-brand-500 hover:text-brand-400"
+          >
+            Sve za {model.label}
+          </Link>
+          {imaStranuVrste(p, model) ? (
+            <Link
+              href={modelTipHref(model.brandKey, model.key, p.typeKey)}
+              className="inline-flex items-center rounded-full border border-ink-600 bg-ink-800 px-4 py-2 text-sm font-medium text-cream/85 transition-colors hover:border-brand-500 hover:text-brand-400"
+            >
+              {p.typeLabel} za {model.label}
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
+
+      {srodni.length > 0 ? (
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {srodni.map((item) => (
+            <ProizvodKartica key={item.id} item={item} />
+          ))}
+        </div>
+      ) : null}
     </section>
   );
 }

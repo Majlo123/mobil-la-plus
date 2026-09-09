@@ -13,16 +13,18 @@ import { Reveal } from "@/components/Reveal";
 import { SpisakJsonLd } from "@/components/SpisakJsonLd";
 import { Button } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { brendHref, kategorijaHref, prodavnicaHref } from "@/lib/catalog";
+import { brendHref, kategorijaHref, modelTipHref, prodavnicaHref } from "@/lib/catalog";
 import { categories } from "@/lib/data";
 import {
   getProductsByType,
+  popularniModeliZaTip,
   productTypes,
   typeDescription,
   type Product,
 } from "@/lib/products";
 import { PO_STRANI, parseUpit, pretrazi } from "@/lib/shop-query";
 import { site } from "@/lib/site";
+import { artikala } from "@/lib/tekst";
 
 /**
  * Kategorijska strana — jedna vrsta artikla (maske, stakla, baterije…).
@@ -62,20 +64,17 @@ const U_VITRINI = 48;
 /** Vrste artikala kod kojih posle kupovine sledi rad u servisu. */
 const UZ_UGRADNJU = ["ekrani", "baterije", "delovi", "stakla"];
 
-const broj = (n: number) => n.toLocaleString("sr-RS");
-
 /**
- * Srpski ima tri oblika množine, a kategorije idu od 4 do 9.247 artikala — bez
- * ovoga bi na strani pisalo „4 artikala". (Isti helper je i na strani brenda;
- * zatreba li trećoj strani, seli se u `src/lib`.)
+ * Koliko modela dobija svoj link u dnu kategorije.
+ *
+ * „Maske" pokrivaju preko hiljadu kombinacija model × vrsta, pa ceo spisak ovde
+ * ne ide — do njega se stiže preko strane marke, koja nabraja sve svoje modele.
+ * Ovih dvadeset četiri su najzastupljeniji, tj. tačno oni koje ljudi i traže
+ * („maska za S23"), i vode na najvrednije strane koje imamo.
  */
-function artikala(n: number): string {
-  const jedinice = n % 10;
-  const desetice = n % 100;
-  if (jedinice === 1 && desetice !== 11) return "artikal";
-  if (jedinice >= 2 && jedinice <= 4 && (desetice < 12 || desetice > 14)) return "artikla";
-  return "artikala";
-}
+const POPULARNIH_MODELA = 24;
+
+const broj = (n: number) => n.toLocaleString("sr-RS");
 
 /**
  * Prvih N za vitrinu: artikli sa fotografijom idu prvi — placeholder ploča
@@ -181,6 +180,7 @@ export default function KategorijaPage({
   const vitrina = zaVitrinu(svi, U_VITRINI);
   const ostalo = svi.length - vitrina.length;
   const brendovi = brendoviUKategoriji(svi);
+  const modeli = popularniModeliZaTip(kat.key, POPULARNIH_MODELA);
   // Veliko početno slovo je obavezno: `<ikonica />` bi JSX shvatio kao HTML tag
   // („<ikonica>"), a ne kao komponentu iz `lib/data`.
   const Ikonica = categories.find((c) => c.key === kat.key)?.icon;
@@ -356,6 +356,39 @@ export default function KategorijaPage({
           )}
         </div>
       </section>
+
+      {/*
+        Model pre marke: kupac ne kuca „maske Samsung" nego „maska za S23", pa
+        je ovo najkraći put do onoga zbog čega je i došao — i, za Google, jedini
+        interni link ka stranama model × vrsta koje ne vise ni sa jedne druge
+        strane osim strane modela.
+      */}
+      {modeli.length > 0 ? (
+        <section className="section border-t border-ink-600">
+          <div className="container">
+            <SectionHeading
+              eyebrow="Za koji model"
+              title={`${kat.label} po modelu telefona`}
+              description="Broj pored modela je koliko artikala ove vrste imamo baš za taj telefon. Ostali modeli su na stranama marki, niže."
+            />
+
+            <div className="mt-8 flex flex-wrap gap-2">
+              {modeli.map((m) => (
+                <Link
+                  key={m.key}
+                  href={modelTipHref(m.brandKey, m.key, kat.key)}
+                  className="inline-flex items-center gap-2 rounded-full border border-ink-600 bg-ink-800 px-4 py-2 text-sm text-cream/85 transition-colors hover:border-brand-500 hover:text-brand-400"
+                >
+                  {m.label}
+                  <span className="text-[0.7rem] tabular-nums text-muted-foreground">
+                    {broj(m.count)}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       {brendovi.length > 0 ? (
         <section className="section border-t border-ink-600 bg-ink-800/40">

@@ -103,8 +103,8 @@ export const site = {
   ],
 
   socials: {
-    instagram: "https://www.instagram.com/mobil.plus_la/",
-    instagramHandle: "mobil.plus_la",
+    instagram: "https://www.instagram.com/mobil_plus_la/",
+    instagramHandle: "mobil_plus_la",
     website: SITE_URL,
   },
 

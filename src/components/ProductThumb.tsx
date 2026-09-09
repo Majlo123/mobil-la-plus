@@ -1,8 +1,18 @@
 import Image from "next/image";
 import { ImageIcon } from "lucide-react";
 import { categories } from "@/lib/data";
-import { JE_PRAZNA_SLIKA, slikaZa, trebaOptimizaciju, type Kadar } from "@/lib/slike";
+import { altSlike } from "@/lib/opis-slike";
+import {
+  JE_PRAZNA_SLIKA,
+  nasaSlika,
+  slikaZa,
+  trebaOptimizaciju,
+  type Kadar,
+} from "@/lib/slike";
 import { cn } from "@/lib/utils";
+// `import type` — tip, ne podaci: `products.ts` uvlači ceo katalog i sme samo
+// na serveru, a tip se briše pri kompajliranju.
+import type { Product } from "@/lib/products";
 
 /**
  * Vizual artikla u prodavnici.
@@ -16,13 +26,22 @@ import { cn } from "@/lib/utils";
  * Ovo je server komponenta — nema fallback-a „na grešku slike”. Ako putanja
  * pukne, ispod slike ostaje svetla ploča, ne prazna belina.
  *
- * Veličinu slike bira `src/lib/slike.ts` prema `kadar` propu: adrese u katalogu
- * pokazuju na sličice dobavljača (120–300 px) koje su na kartici vidljivo mutne,
- * pa se prepisuju na veću varijantu istog izvora.
+ * ADRESA SLIKE je uvek NAŠA (`/slika/<slug>.jpg`), nikad dobavljačeva — vidi
+ * `nasaSlika` u `src/lib/slike.ts` i rutu `src/app/slika/[slug]/route.ts`.
+ * Ukratko: Google Images sliku pripisuje domenu koji je servira, pa bi sa
+ * `<img src="https://www.vipmobil.net/…">` sve naše fotografije u pretrazi
+ * slika bile tuđe. Ruta preuzme original sa dobavljača i servira ga sa našeg
+ * domena, uz keš od godinu dana.
  *
- * Slike idu `unoptimized` osim tamo gde `trebaOptimizaciju` kaže drugačije —
- * već su male, pa bi optimizer trošio kvotu transformacija hostinga na 30.000+
- * artikala bez ikakve dobiti.
+ * Prima ceo artikal, a ne raspakovana polja, jer mu za sliku treba `slug` (za
+ * našu adresu), a za alt tekst i naziv, vrsta, marka i model — vidi
+ * `src/lib/opis-slike.ts`. Sedam propova koji uvek dolaze iz istog objekta samo
+ * su prilika da se negde prosledi pogrešan par.
+ *
+ * Koju veličinu ruta traži od dobavljača određuje `kadar`, isto kao i ranije;
+ * `trebaOptimizaciju` se i dalje pita nad IZVORNOM adresom, jer odluka zavisi
+ * od toga koji dobavljač je u pitanju i koliko je slika velika (vipmobil
+ * original na strani artikla je 3264×3264 i ide kroz Next-ov optimizer).
  */
 
 /**
@@ -34,12 +53,7 @@ const vrstaArtikla = (typeKey?: string) =>
   typeKey ? categories.find((c) => c.key === typeKey) : undefined;
 
 type ThumbProps = {
-  src?: string;
-  name: string;
-  /** Ključ vrste artikla iz kataloga — određuje ikonicu na placeholder-u. */
-  typeKey?: string;
-  /** Kataloški kod artikla; prikazuje se sitno, kad slike nema. */
-  code?: string;
+  artikal: Product;
   /** Gde se slika prikazuje — određuje koja se veličina traži od izvora. */
   kadar?: Kadar;
   sizes?: string;
@@ -48,30 +62,33 @@ type ThumbProps = {
 };
 
 export function ProductThumb({
-  src,
-  name,
-  typeKey,
-  code,
+  artikal,
   kadar = "kartica",
   sizes = "(max-width: 640px) 50vw, 25vw",
   priority = false,
   className,
 }: ThumbProps) {
+  const alt = altSlike(artikal);
+
   // Placeholder dobavljača nije fotografija proizvoda — bolje naš tile.
-  const adresa = JE_PRAZNA_SLIKA(src) ? undefined : slikaZa(src, kadar);
+  // `izvor` je ono što će ruta preuzeti; do pretraživača nikad ne stiže, ali od
+  // njega zavisi da li slika ide kroz optimizer.
+  const izvor = JE_PRAZNA_SLIKA(artikal.image)
+    ? undefined
+    : slikaZa(artikal.image, kadar);
 
   /* --- Fotografija artikla --- */
-  if (adresa) {
+  if (izvor) {
     return (
       <div className={cn("relative overflow-hidden bg-cream p-3", className)}>
         <Image
-          src={adresa}
-          alt={name}
+          src={nasaSlika(artikal.slug, kadar)}
+          alt={alt}
           fill
           sizes={sizes}
           priority={priority}
           // vidi napomenu na vrhu fajla
-          unoptimized={!trebaOptimizaciju(adresa, kadar)}
+          unoptimized={!trebaOptimizaciju(izvor, kadar)}
           // `contain`, ne `cover`: sličice dobavljača već imaju svoju marginu,
           // pa bi `cover` odsekao ivice proizvoda.
           className="object-contain"
@@ -81,9 +98,12 @@ export function ProductThumb({
   }
 
   /* --- Nema fotografije → brendiran placeholder --- */
-  const vrsta = vrstaArtikla(typeKey);
+  const vrsta = vrstaArtikla(artikal.typeKey);
   const Icon = vrsta?.icon ?? ImageIcon;
   const oznaka = vrsta?.short;
+  // Kataloški kod se ispisuje samo tamo gde se artikal gleda izbliza (strana
+  // artikla): u mreži kartica je to sitan broj koji nikome ništa ne znači.
+  const kod = kadar === "detalj" ? artikal.id : undefined;
 
   return (
     <div
@@ -92,7 +112,7 @@ export function ProductThumb({
         className,
       )}
       role="img"
-      aria-label={`${name} — fotografija uskoro`}
+      aria-label={`${alt} — fotografija uskoro`}
     >
       {/* Mreža sa logotipa (štampana ploča) — drži tile brendiranim bez slike. */}
       <div className="pointer-events-none absolute inset-0 bg-grid-faint [background-size:22px_22px]" />
@@ -106,7 +126,7 @@ export function ProductThumb({
         </span>
       </div>
 
-      {oznaka || code ? (
+      {oznaka || kod ? (
         <div className="relative z-10 flex items-center justify-between gap-2 border-t border-ink-600 px-3 py-2">
           {oznaka ? (
             <span className="min-w-0 truncate text-[0.66rem] font-medium text-cream/60">
@@ -115,9 +135,9 @@ export function ProductThumb({
           ) : (
             <span />
           )}
-          {code ? (
+          {kod ? (
             <span className="shrink-0 text-[0.66rem] font-semibold tabular-nums text-muted-foreground">
-              {code}
+              {kod}
             </span>
           ) : null}
         </div>

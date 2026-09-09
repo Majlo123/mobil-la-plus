@@ -127,6 +127,22 @@ export const productPath = (item: { id: string; name: string }) =>
 export const kategorijaHref = (tip: string) => `/kategorija/${tip}`;
 export const brendHref = (brend: string) => `/za-telefon/${brend}`;
 
+/**
+ * „Sve za Galaxy S23" — `/za-telefon/samsung/galaxy-s23`.
+ *
+ * Model stoji ISPOD marke, a ne kao zasebna grana (`/model/galaxy-s23`), zato
+ * što kupac tako i pretražuje („maska za Samsung S23") i zato što putanja onda
+ * sama nosi hijerarhiju: marka → model → vrsta artikla. Marka se prosleđuje, a
+ * ne izvodi iz ključa modela, jer u ključu marke nema („galaxy-s23" ne kaže
+ * „samsung"); kanonsku marku modela daje `getModel()` iz `@/lib/products`.
+ */
+export const modelHref = (brend: string, model: string) =>
+  `/za-telefon/${brend}/${model}`;
+
+/** „Ekrani za Galaxy S23" — `/za-telefon/samsung/galaxy-s23/ekrani`. */
+export const modelTipHref = (brend: string, model: string, tip: string) =>
+  `/za-telefon/${brend}/${model}/${tip}`;
+
 /** Prodavnica sa unaprijed postavljenim filterom. */
 export const prodavnicaHref = (params: Record<string, string> = {}) => {
   const qs = new URLSearchParams(params).toString();

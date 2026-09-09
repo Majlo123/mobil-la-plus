@@ -13,6 +13,7 @@ import {
   pretrazi,
   type Upit,
 } from "@/lib/shop-query";
+import { artikala } from "@/lib/tekst";
 
 /**
  * Prodavnica — cela je serverska osim kontrola filtera.
@@ -24,21 +25,6 @@ import {
  */
 
 type SearchParams = Record<string, string | string[] | undefined>;
-
-/**
- * „1 artikal", „24 artikla", „14.502 artikla" — srpski ima tri oblika množine,
- * a broj pogodaka ovde ide od nule do celog kataloga.
- *
- * Isti helper stoji i na kategorijskoj strani i na strani brenda; kad se sledeći
- * put dira, seli se u `src/lib` (ovde je prepisan da strane ostanu nezavisne).
- */
-function artikala(n: number): string {
-  const jedinice = n % 10;
-  const desetice = n % 100;
-  if (jedinice === 1 && desetice !== 11) return "artikal";
-  if (jedinice >= 2 && jedinice <= 4 && (desetice < 12 || desetice > 14)) return "artikla";
-  return "artikala";
-}
 
 const broj = (n: number) => n.toLocaleString("sr-RS");
 

@@ -22,7 +22,21 @@ export default function robots(): MetadataRoute.Robots {
 
   return {
     rules: { userAgent: "*", allow: "/" },
-    // Dva sitemap-a: URL-ovi svih stranica + poseban image sitemap za fotografije.
+    /**
+     * Dva stabla sitemap-a, i oba su INDEKSI (`<sitemapindex>`), ne spiskovi:
+     *
+     *   /sitemap.xml        → /sitemap/strane.xml + /sitemap/artikli-N.xml
+     *   /image-sitemap.xml  → /image-sitemap/N.xml
+     *
+     * Delovi se OVDE ne nabrajaju namerno. Google ih pokupi iz indeksa, a broj
+     * delova raste sa katalogom — spisak u robots.txt bi zastareo prvog dana i
+     * prijavljivao fajl koji više ne postoji. Indeks se pravi iz istog izvora iz
+     * koga se generišu i delovi (vidi `src/lib/sitemap.ts`), pa ta dva ne mogu
+     * da se raziđu.
+     *
+     * Fotografije su zasebno stablo jer indeks ne sme da pokazuje na drugi
+     * indeks — zato su ovde prijavljena oba.
+     */
     sitemap: [`${SITE_URL}/sitemap.xml`, `${SITE_URL}/image-sitemap.xml`],
     host: SITE_URL,
   };
