@@ -279,8 +279,8 @@ function repNaslova(p: Podaci): string {
  */
 function nacinKupovine(p: Podaci): string {
   return p.ugradnja
-    ? `Ugradnja u našem servisu (${site.address.city}), upit na Viber ili WhatsApp, slanje kurirom.`
-    : `Upit na Viber ili WhatsApp, preuzimanje u radnji (${site.address.city}) ili slanje kurirom.`;
+    ? `Ugradnja u našem servisu (${site.address.city}), upit na Viber ili WhatsApp, slanje kurirom uz uplatu pre slanja.`
+    : `Upit na Viber ili WhatsApp, lično preuzimanje u radnji (${site.address.city}) istog ili sledećeg radnog dana ili slanje kurirom uz uplatu pre slanja.`;
 }
 
 export function generateMetadata({
@@ -390,7 +390,7 @@ export default function ModelTipPage({
         description={
           ugradnja
             ? `Prodajemo i ugrađujemo — zamena se radi u našem servisu na adresi ${site.address.street}, ${site.address.city}. Javite se sa modelom da potvrdimo dostupnost i dogovorimo termin.`
-            : `Cene su maloprodajne, u dinarima. Preuzimanje u radnji na adresi ${site.address.street}, ${site.address.city}, ili slanje kurirskom službom širom Srbije.`
+            : `Cene su maloprodajne, u dinarima. Lično preuzimanje u radnji na adresi ${site.address.street}, ${site.address.city}, istog ili sledećeg radnog dana, ili slanje kurirskom službom širom Srbije — uplata pre slanja.`
         }
       />
 

@@ -311,8 +311,8 @@ export function productHighlights(p: Product): string[] {
     ...(ugradnja ? ["Ugradnja u našem servisu, uz garanciju na deo"] : []),
     ...(p.typeKey === "stakla" ? ["Postavljamo u radnji, bez mehurića"] : []),
     "Proverite dostupnost na Viber ili WhatsApp — odgovaramo isti dan",
-    "Preuzimanje u radnji: Braće Ribnikar 17, Novi Sad",
-    "Slanje kurirskom službom širom Srbije",
+    "Lično preuzimanje istog ili sledećeg radnog dana — Braće Ribnikar 17, Novi Sad",
+    "Slanje kurirskom službom širom Srbije — uplata pre slanja",
   ];
 }
 

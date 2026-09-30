@@ -105,6 +105,8 @@ export default function KatalogPage({ params }: { params: { strana: string } }) 
               <p className="font-semibold text-cream">Cene su maloprodajne, u dinarima</p>
               <p className="mt-0.5 text-sm text-muted-foreground">
                 Nema korpe — javite se za dostupnost i rezervaciju, odgovaramo isti dan.
+                Lično preuzimanje istog ili sledećeg radnog dana, slanje kurirom uz
+                uplatu pre slanja.
               </p>
             </div>
             <KontaktDugmad className="shrink-0" />

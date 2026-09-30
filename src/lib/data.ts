@@ -280,6 +280,10 @@ export const faq: Faq[] = [
     a: "Cene u prodavnici su maloprodajne za artikal. Za uslugu ugradnje i za artikle koji nisu na lageru javite se na Viber, WhatsApp ili telefon — potvrdimo dostupnost i konačnu cenu pre bilo kakvog rada.",
   },
   {
+    q: "Kako preuzimam artikal iz prodavnice?",
+    a: "Lično, u radnji na Braće Ribnikar 17, Novi Sad — poručen artikal preuzimate istog ili sledećeg radnog dana. Šaljemo i kurirskom službom širom Srbije, uz uplatu pre slanja.",
+  },
+  {
     q: "Nisam iz Novog Sada — možete li mi popraviti telefon?",
     a: "Da. Telefon nam pošaljite kurirskom službom na Braće Ribnikar 17, Novi Sad. Pozovite ili pišite pre slanja da se dogovorimo oko kvara i načina vraćanja.",
   },

@@ -142,7 +142,9 @@ export default function ONamaPage() {
                 <p className="mt-2.5 text-[0.95rem] leading-relaxed text-cream/70">
                   Cene stoje uz svaki artikal, u dinarima. Nema korpe ni plaćanja
                   na sajtu — pišete na Viber, WhatsApp ili Instagram, potvrdimo da
-                  je model na stanju i dogovorimo preuzimanje.
+                  je model na stanju i dogovorimo preuzimanje. Artikal lično
+                  preuzimate istog ili sledećeg radnog dana, a kurirom ga šaljemo
+                  uz uplatu pre slanja.
                 </p>
 
                 {/*

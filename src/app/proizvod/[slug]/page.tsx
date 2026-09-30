@@ -302,7 +302,7 @@ export default function ProizvodPage({ params }: { params: { slug: string } }) {
 
                 <p className="mt-4 text-[0.8rem] leading-relaxed text-muted-foreground">
                   Nema korpe ni narudžbenice — dostupnost i konačnu cenu
-                  potvrđujemo u poruci pre slanja. Drugi broj:{" "}
+                  potvrđujemo u poruci, pre preuzimanja ili uplate. Drugi broj:{" "}
                   <a
                     href={site.telAltHref}
                     className="font-medium text-brand-400 hover:underline"

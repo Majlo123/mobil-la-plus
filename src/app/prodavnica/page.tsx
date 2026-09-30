@@ -95,7 +95,7 @@ export default function ProdavnicaPage({
       <PageHeader
         eyebrow="Prodavnica"
         title="Oprema za mobilne telefone"
-        description={`Maske, stakla, punjači, kablovi, baterije i ekrani — ${broj(uKatalogu)} artikala sa cenom. Nema korpe: izaberete artikal, javite se na Viber, WhatsApp ili Instagram i mi ga spremimo.`}
+        description={`Maske, stakla, punjači, kablovi, baterije i ekrani — ${broj(uKatalogu)} artikala sa cenom. Nema korpe: izaberete artikal, javite se na Viber, WhatsApp ili Instagram i mi ga spremimo — za lično preuzimanje istog ili sledećeg radnog dana, ili za slanje kurirom uz uplatu pre slanja.`}
       />
 
       <section className="section pt-10 md:pt-12">

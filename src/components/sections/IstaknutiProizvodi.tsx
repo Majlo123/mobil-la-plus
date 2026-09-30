@@ -91,7 +91,7 @@ export function IstaknutiProizvodi() {
         <SectionHeading
           eyebrow="Iz prodavnice"
           title="Cena stoji na sajtu — javite se i artikal je rezervisan"
-          description="Nema korpe ni čekiranja: kliknete Viber, WhatsApp ili Instagram ispod cene i poruka o tom artiklu je već napisana. Potvrdimo dostupnost isti dan."
+          description="Nema korpe ni čekiranja: kliknete Viber, WhatsApp ili Instagram ispod cene i poruka o tom artiklu je već napisana. Potvrdimo dostupnost isti dan, a artikal lično preuzimate istog ili sledećeg radnog dana ili ga šaljemo kurirom uz uplatu pre slanja."
         />
 
         <div className="mt-12 space-y-12">

@@ -176,7 +176,8 @@ export default function KontaktPage() {
               <p className="mt-3 text-cream/70">
                 U poruci pošaljite model telefona i kratko šta se dešava. Za artikal
                 iz prodavnice dovoljan je naziv — odmah kažemo da li je na stanju i
-                po kojoj ceni.
+                po kojoj ceni. Artikal lično preuzimate istog ili sledećeg radnog
+                dana, a slanje kurirom ide uz uplatu pre slanja.
               </p>
 
               {/* „kolona": svaki kanal je puna, palcem lako pogodiva traka. */}
