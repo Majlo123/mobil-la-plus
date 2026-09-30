@@ -4,6 +4,7 @@ import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingContact } from "@/components/FloatingContact";
+import { ObavestenjeKupcima } from "@/components/ObavestenjeKupcima";
 import { ID_FIRME, site, SITE_URL } from "@/lib/site";
 
 // Fontovi sa podrškom za srpsku latinicu (č, ć, š, ž, đ) → subset "latin-ext".
@@ -200,6 +201,7 @@ export default function RootLayout({
         <main>{children}</main>
         <Footer />
         <FloatingContact />
+        <ObavestenjeKupcima />
       </body>
     </html>
   );
