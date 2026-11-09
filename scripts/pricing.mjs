@@ -45,6 +45,16 @@ export function mnozilac(nabavnaEur) {
  */
 export const zaokruzi = (rsd) => Math.round(rsd / 10) * 10;
 
+/**
+ * Minimalna prodajna cena u dinarima — nijedan artikal se ne prodaje jeftinije
+ * (odluka vlasnika). Primenjuje se u build-u POSLE spajanja duplikata, da se
+ * između dva dobavljača i dalje bira onaj sa nižom nabavnom cenom.
+ */
+export const MIN_CENA_RSD = 1000;
+
+/** Podiže cenu na minimum; `null` („Cena na upit") ostaje `null`. */
+export const saMinimumom = (rsd) => (rsd === null ? null : Math.max(rsd, MIN_CENA_RSD));
+
 const valjana = (n) => typeof n === "number" && Number.isFinite(n) && n > 0;
 
 /**

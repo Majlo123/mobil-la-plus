@@ -20,7 +20,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { prodajnaIzEur, prodajnaIzRsd, EUR_RSD } from "./pricing.mjs";
+import { prodajnaIzEur, prodajnaIzRsd, saMinimumom, EUR_RSD } from "./pricing.mjs";
 import { MODELI } from "./modeli-dictionary.mjs";
 import {
   TIPOVI,
@@ -355,7 +355,9 @@ for (const p of svi) {
   najbolji.set(kljuc, bolji);
 }
 
-const items = [...najbolji.values()].sort((a, b) => a.name.localeCompare(b.name, "sr"));
+const items = [...najbolji.values()]
+  .map((p) => ({ ...p, price: saMinimumom(p.price) }))
+  .sort((a, b) => a.name.localeCompare(b.name, "sr"));
 const packed = pack(items);
 
 mkdirSync(OUT_DIR, { recursive: true });
